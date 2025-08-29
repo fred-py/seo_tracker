@@ -1,8 +1,11 @@
 from serpapi.google_search import GoogleSearch
 import pprint
+import os
+from dotenv import load_dotenv
 
-api_key = '99023a2c0c9bf6c830b6b64f6ec3ab05542781290f4739fdf28ef54a7826a832'
 
+load_dotenv()
+api_keys = os.getenv('API_KEY')
 
 class GetGoogleResults:
 
