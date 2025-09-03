@@ -5,7 +5,8 @@ from dotenv import load_dotenv
 
 
 load_dotenv()
-api_keys = os.getenv('API_KEY')
+api_key = os.getenv('API_KEY')
+
 
 class GetGoogleResults:
 
@@ -64,7 +65,7 @@ class GetGoogleResults:
 
         results = raw_data.get_dict()
         m_results = results['local_results']
-        pprint.pprint(f'Maps results for {self.q} in {self.location}')
+        pprint.pprint(f'=======> Maps results for {self.q} in {self.location}=========>')
         try:
             for r in m_results:
                 # This if statement accounts for business
