@@ -13,7 +13,7 @@ CONFIG = {
         "carpet cleaning busselton wa",
         "carpet cleaner busselton",
         "carpet cleaning",
-        "carpet cleaning near me"
+        "carpet cleaning near me",
         "carpet cleaning busselton prices",
         "elite carpet cleaning busselton",
         "prime carpet cleaning busselton",
@@ -31,3 +31,14 @@ CONFIG = {
         "carpet stretch and clean near me"
     ]
 }
+
+location_1 = "Margaret River, Western Australia, Australia" 
+location_1_keywords = [
+    "carpet cleaning margaret river",
+    "carpet cleaner margaret river",
+    "carpet cleaning",
+    "carpet cleaning near me",
+    "above & beyond carpet cleaning margaret river",
+    "elite carpet cleaning",
+    "rug cleaning margaret river"
+]

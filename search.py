@@ -10,9 +10,9 @@ api_key = os.getenv('API_KEY')
 
 class GetGoogleResults:
 
-    def __init__(self, q: str, location: str) -> None:
-        self.q = q
+    def __init__(self, location: str, q: str, ) -> None:
         self.location = location
+        self.q = q
 
     def set_organic_params(self):
         params = {
@@ -47,17 +47,24 @@ class GetGoogleResults:
 
     def get_organic_results(self, raw_data) -> dict:
         results = raw_data.get_dict()
+        #print(results)
         organic_results = results['organic_results']
-        pprint.pprint(f'Organic results for {self.q} in {self.location}')
+        #pprint.pprint(f'Organic results for {self.q} in {self.location}')
+        data_list = []
         try:
             for r in organic_results:
-                data = {
-                    'Title': r['title'],
-                    'Source': r['source'],
-                    'Position': r['position'],
-                    'link': r['link'],
-                }
-                pprint.pprint(data)
+                data = {'Keyword': self.q,
+                        'Location': self.location[
+                                        'Title': r['title'],
+                                        'Source': r['source'],
+                                        'Position': r['position'],
+                                        'link': r['link']
+                                    ]
+                        }
+                
+                data_list.append(data)
+                print(data_list)
+            return data_list
         except TypeError as e:
             return e
 
@@ -81,7 +88,8 @@ class GetGoogleResults:
                         'Rating': rating,
                         'Service': r['type'],
                     }
-                pprint.pprint(data)
+                #pprint.pprint(data)
+                return data
         except KeyError as e:
             print(e)
 
@@ -98,6 +106,33 @@ def search_wrapper_func(query_instance) -> None:
     return r
 
 
+location_1 = "Margaret River, Western Australia, Australia"
+location_1_keywords = [
+    "carpet cleaning margaret river",
+    "carpet cleaner margaret river",
+    "carpet cleaning",
+    "carpet cleaning near me",
+    "above & beyond carpet cleaning margaret river",
+    "elite carpet cleaning",
+    "rug cleaning margaret river"
+]
+
+
+def search_wrapper_func_2(location, query_list) -> dict:
+    for keyword in query_list:
+        q = GetGoogleResults(location, keyword)
+        organic = q.set_organic_params()
+        raw_data = GoogleSearch(organic)
+        
+        final = q.get_organic_results(raw_data)
+        print(final)
+    return final
+
+
+search_wrapper_func_2(location_1, location_1_keywords)
+
+
+"""
 query_mr = GetGoogleResults(
     'carpet cleaning margaret river',
     'Margaret River, Western Australia, Australia')
@@ -107,11 +142,11 @@ query_b = GetGoogleResults(
 query_d = GetGoogleResults(
     'carpet cleaning dunsborough',
     'Dunsborough, Western Australia, Australia')
+"""
 
-
-search_wrapper_func(query_mr)
-search_wrapper_func(query_b)
-search_wrapper_func(query_d)
+#search_wrapper_func(query_mr)
+#search_wrapper_func(query_b)
+#search_wrapper_func(query_d)
 """# Margaret River
 organic_mr = query_mr.set_organic_params()
 o_results = GoogleSearch(organic_mr)
