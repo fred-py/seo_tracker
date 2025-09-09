@@ -3,10 +3,16 @@ import pprint
 import os
 import json
 from dotenv import load_dotenv
-
+from dateutil import tz
+from datetime import datetime
+from app.core.db import save_organic_results
 
 load_dotenv()
 api_key = os.getenv('API_KEY')
+
+
+d = datetime.now(tz=tz.tzlocal())
+date = d.strftime('%d/%m/%Y')
 
 
 class GetGoogleResults:
@@ -49,16 +55,21 @@ class GetGoogleResults:
         #print(results)
         organic_results = results['organic_results']
         #pprint.pprint(f'Organic results for {self.q} in {self.location}')
-        data_dict = {keyword: []}
+        data_dict = {
+            'location': self.location,
+            'keyword': keyword,
+            'date': date,
+            'rank': []
+        }
         try:
             for r in organic_results:
                 data = {
-                    'Title': r['title'],
-                    'Source': r['source'],
-                    'Position': r['position'],
+                    'title': r['title'],
+                    'source': r['source'],
+                    'position': r['position'],
                     'link': r['link']
                 }
-                data_dict[keyword].append(data)
+                data_dict['rank'].append(data)
                 #print(data)
             return data_dict
         except TypeError as e:
@@ -76,13 +87,13 @@ class GetGoogleResults:
                 if r['reviews_original'] == 'No reviews':
                     rating = 'n/a'
                 else:
-                    rating = r['rating']        
+                    rating = r['rating'] 
                 data = {
-                        'Title': r['title'],
-                        'Position': r['position'],
-                        'Reviews': r['reviews_original'],
-                        'Rating': rating,
-                        'Service': r['type'],
+                        'title': r['title'],
+                        'position': r['position'],
+                        'reviews': r['reviews_original'],
+                        'rating': rating,
+                        'service': r['type'],
                     }
                 #pprint.pprint(data)
                 return data
@@ -101,20 +112,49 @@ location_1_keywords = [
     "rug cleaning margaret river"
 ]
 
+location_2 = "Busselton, Western Australia, Australia"
+location_2_keywords = [
+    "carpet cleaning busselton",
+    "carpet cleaning busselton wa",
+    "carpet cleaner busselton",
+    "carpet cleaning",
+    "carpet cleaning near me",
+    "carpet cleaning busselton prices",
+    "elite carpet cleaning busselton",
+    "prime carpet cleaning busselton",
+    "professional carpet cleaner busselton",
+    "rug cleaning  busselton"
+]
+
+location_3 = "Dunsborough, Western Australia"
+location_3_keywords = [
+        "carpet cleaner dunsborough",
+        "carpet cleaning dunsborough",
+        "carpet cleaners dunsborough area",
+        "carpet cleaning shampoo near me",
+        "carpet shampoo service near me",
+        "carpet cleaning",
+        "carpet cleaning near me",
+        "carpet stretch and clean near me"
+    ]
+
+
 
 def main():
-    location = GetGoogleResults(location_1)
-    data_list = {location_1: []}
+    location = GetGoogleResults(location_3)
+    data_list = []
 
-    for keyword in location_1_keywords:
+    for keyword in location_3_keywords:
         params = location.set_organic_params(keyword)
         raw = GoogleSearch(params)
         data = location.get_organic_results(raw, keyword)
-        data_list[location_1].append(data)
+        data_list.append(data)
+    
+    save_organic_results(data_list)
     pprint.pprint(data_list)
 
-    with open("{location_1}results.json", "w") as f:
-        json.dump(data_list, f, indent=2)
+    #with open("results_test_busselton.json", "w") as f:
+    #    json.dump(data_list, f, indent=2)
 
 
 if __name__ == '__main__':
