@@ -5,7 +5,7 @@ import json
 from dotenv import load_dotenv
 from dateutil import tz
 from datetime import datetime
-from app.core.db import save_organic_results
+from backend.app.database import save_organic_results
 
 load_dotenv()
 api_key = os.getenv('API_KEY')
@@ -137,7 +137,6 @@ location_3_keywords = [
         "carpet cleaning near me",
         "carpet stretch and clean near me"
     ]
-
 
 
 def main():

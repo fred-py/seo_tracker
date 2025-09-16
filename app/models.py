@@ -1,10 +1,8 @@
-"""SQLModel combines SQLAlchemy with Pydentic, data validation out of the box.
-Reduces redundancy, less code. 
-Synchronous support to handle multiple requests concurrently"""
-# https://www.youtube.com/watch?v=GONyd0CUrPc
 from typing import Optional
 from sqlmodel import Field, Relationship, Session, SQLModel, create_engine
 
+
+# ** GLOBAL MODELS **
 
 class Location(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True, index=True)

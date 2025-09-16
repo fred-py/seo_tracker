@@ -1,0 +1,8 @@
+Services/providers
+Services are responsible for combining or orchestrating multiple internal operations to implement a business logic (services), while providers implement the interface with external systems.
+Services typically use repositories for data access to implement complex business logic rather than simple data retrieval and mutation operations. Each module of your application can have its own service.
+Providers are similar to services but are specialized in interacting with external systems such as internal/third-party APIs. Examples of providers
+include clients for email servers, payment gateways, or other microservices.
+Essentially, both providers and services support implementation of controller business logic by facilitating internal and external interactions.
+Here is an example of how they work together within a route controller: the users database service fetches a user’s record by email and then uses that
+information with a payment gateway and email server clients (providers) for processing payments and sending confirmation emails.

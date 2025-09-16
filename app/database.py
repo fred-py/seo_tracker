@@ -2,14 +2,14 @@ from sqlmodel import Session, SQLModel, create_engine, select
 
 #from app import crud
 #from app.core.config import settings
-from app.models import Location, Keyword, OrganicRank
+from models import Location, Keyword, OrganicRank
 from dotenv import load_dotenv
 import os
 
 load_dotenv()
 
-postgress = os.getenv('DATABASE_URL')
-engine = create_engine(postgress, echo=True)
+postgres = os.getenv('DATABASE_URL')
+engine = create_engine(postgres, echo=True)
 
 
 # make sure all SQLModel models are imported (app.models) before initializing DB
@@ -20,7 +20,24 @@ def init_db():
     SQLModel.metadata.create_all(engine)
 
 
-def get_session():
+def get_db():
+    """
+    Uses SQLAlchemy's built-in context manager
+    'with statement' to initialise and close
+    sessions automatically
+
+    Built-in exception handling included.
+
+    For dependency injection use at router level,
+    import Depends and pass it as a param on router method
+
+    Example:
+    @app.get("seo_rank/{location}")
+    def_get_rank_by_location(location, db = Depends(get_db)):
+        # Add logic
+
+    Refer to page 57 Building Generative AI services with FastAPI
+    """
     with Session(engine) as session:
         yield session
 

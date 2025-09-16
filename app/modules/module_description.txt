@@ -1,0 +1,12 @@
+Files store in this module include
+/auth
+    routers.py
+    models.py * Note, models related to auth - NOT GLOBAL models
+    guards.py refer to page 64-66 Generative AI FastAPI
+    services.py
+    dependencies.py
+/users
+    router.py
+    models.py
+    dependencies.py
+
