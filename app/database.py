@@ -1,26 +1,38 @@
+import os
+
 from sqlmodel import Session, SQLModel, create_engine, select
+from sqlmodel.ext.asyncio.session import AsyncSession, AsyncEngine
+
+from sqlalchemy.orm import sessionmaker 
 
 #from app import crud
 #from app.core.config import settings
 from models import Location, Keyword, OrganicRank
 from dotenv import load_dotenv
-import os
+
 
 load_dotenv()
 
-postgres = os.getenv('DATABASE_URL')
-engine = create_engine(postgres, echo=True)
+DATABASE_URL = os.getenv('DATABASE_URL')
+
+engine = AsyncEngine(create_engine(DATABASE_URL, echo=True))
 
 
 # make sure all SQLModel models are imported (app.models) before initializing DB
 # otherwise, SQLModel might fail to initialize relationships properly
 # for more details: https://github.com/fastapi/full-stack-fastapi-template/issues/28
 
-def init_db():
-    SQLModel.metadata.create_all(engine)
+async def init_db():
+    """
+    run_sync used as metadata.creat_all
+    doesn't execute asynchronously
+    """
+    async with engine.begin() as conn:
+        # await conn.run_sync(SQLModel.metadata.drop_all)
+        await conn.run_sync(SQLModel.metadata.create_all)
 
 
-def get_db():
+async def get_session() -> AsyncSession:
     """
     Uses SQLAlchemy's built-in context manager
     'with statement' to initialise and close
@@ -38,7 +50,10 @@ def get_db():
 
     Refer to page 57 Building Generative AI services with FastAPI
     """
-    with Session(engine) as session:
+    async_session = sessionmaker(
+        engine, class_=AsyncSession, expire_on_commit=False
+    )
+    async with async_session() as session:
         yield session
 
 
