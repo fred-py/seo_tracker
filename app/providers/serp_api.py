@@ -5,14 +5,15 @@ import json
 from dotenv import load_dotenv
 from dateutil import tz
 from datetime import datetime
-from backend.app.database import save_organic_results
+from backend.app.database.crud import save_organic_results
+import asyncio
 
 load_dotenv()
 api_key = os.getenv('API_KEY')
 
 
-d = datetime.now(tz=tz.tzlocal())
-date = d.strftime('%d/%m/%Y')
+date_obj = datetime.now(tz=tz.tzlocal())
+#date = d.strftime('%d/%m/%Y')
 
 
 class GetGoogleResults:
@@ -58,7 +59,7 @@ class GetGoogleResults:
         data_dict = {
             'location': self.location,
             'keyword': keyword,
-            'date': date,
+            'date': date_obj,
             'rank': []
         }
         try:
@@ -138,23 +139,60 @@ location_3_keywords = [
         "carpet stretch and clean near me"
     ]
 
+mr_upholstery_keys = [
+    "couch cleaning margaret river",
+    "couch cleaner margaret river",
+    "cost to have upholstery cleaned",
+    "margaret river upholstery",
+    "upholstery cleaning busselton",
+    "upholstery cleaners busselton",
+    "upholstery cleaning margate",
+    "upholstery cleaning margaret river",
+    "upholstery cleaning",
+    "upholstery cleaning near me"
+]
 
-def main():
-    location = GetGoogleResults(location_3)
+bus_upholstery_keys = [
+    "upholstery cleaning busselton",
+    "upholstery cleaner busselton",
+    "upholstery cleaners busselton",
+    "couch cleaning busselton",
+    "busselton upholstery",
+    "cost to have upholstery cleaned",
+    "upholstery cleaning",
+    "upholstery cleaning near me",
+    "couch cleaning cost",
+]
+
+duns_upholstery_keys = [
+    "couch cleaning busselton",
+    "dunsborough upholstery",
+    "upholstery cleaner dunsborough",
+    "upholstery cleaning busselton",
+    "upholstery cleaners busselton",
+    "upholstery cleaning near me",
+]
+
+
+def main(location: str, keywords: list):
+    set_location = GetGoogleResults(location)
     data_list = []
 
-    for keyword in location_3_keywords:
-        params = location.set_organic_params(keyword)
+    for keyword in keywords:
+        params = set_location.set_organic_params(keyword)
         raw = GoogleSearch(params)
-        data = location.get_organic_results(raw, keyword)
+        data = set_location.get_organic_results(raw, keyword)
         data_list.append(data)
-    
-    save_organic_results(data_list)
+
+    # This function needs to be called using asyncio.run()
+    # Since save_organic_results is an async function
+    # being called inside a regular function
+    asyncio.run(save_organic_results(data_list))
     pprint.pprint(data_list)
 
-    #with open("results_test_busselton.json", "w") as f:
-    #    json.dump(data_list, f, indent=2)
+    with open("duns_upholstery.json", "w") as f:
+        json.dump(data_list, f, indent=2)
 
 
 if __name__ == '__main__':
-    main()
+    main(location_3, duns_upholstery_keys)
