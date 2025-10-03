@@ -19,7 +19,7 @@ async def save_organic_results(data: list[dict]):
         for item in data:
             search_term = Keyword(
                 keywords=item['keyword'],
-                date=item['date'],
+                created_date=item['created_date'],
                 location=area,  # location is set to create relationship with Location model
             )
             # List comprehension to add ranks at once

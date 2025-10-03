@@ -13,7 +13,7 @@ api_key = os.getenv('API_KEY')
 
 
 date_obj = datetime.now(tz=tz.tzlocal())
-#date = d.strftime('%d/%m/%Y')
+date = date_obj.date()
 
 
 class GetGoogleResults:
@@ -59,8 +59,8 @@ class GetGoogleResults:
         data_dict = {
             'location': self.location,
             'keyword': keyword,
-            'date': date_obj,
-            'rank': []
+            'created_date': date,
+            'rank': [],
         }
         try:
             for r in organic_results:
@@ -187,12 +187,14 @@ def main(location: str, keywords: list):
     # This function needs to be called using asyncio.run()
     # Since save_organic_results is an async function
     # being called inside a regular function
-    asyncio.run(save_organic_results(data_list))
+    pprint.pprint(type(data_list[0]['created_date']))
     pprint.pprint(data_list)
+    asyncio.run(save_organic_results(data_list))
 
-    with open("duns_upholstery.json", "w") as f:
-        json.dump(data_list, f, indent=2)
+
+    #with open("duns_upholstery.json", "w") as f:
+    #    json.dump(data_list, f, indent=2)
 
 
 if __name__ == '__main__':
-    main(location_3, duns_upholstery_keys)
+    main(location_3, location_3_keywords)

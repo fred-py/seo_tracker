@@ -1,5 +1,5 @@
 from typing import Optional
-from datetime import date as date_type
+from datetime import date
 from sqlmodel import Field, Relationship, Session, SQLModel, create_engine
 
 
@@ -15,8 +15,7 @@ class Location(SQLModel, table=True):
 class Keyword(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True, index=True)
     keywords: str = Field(index=True)
-    date: date_type = Field(index=True)
-
+    created_date: date = Field(index=True)
     location_id: int = Field(foreign_key='location.id')
     location: Location = Relationship(back_populates='keywords')
 
