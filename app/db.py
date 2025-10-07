@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -8,8 +9,12 @@ from sqlalchemy.orm import sessionmaker
 
 from dotenv import load_dotenv
 
+# parent property moves up one directory level each time it is called
+# The below represents seo_tracker/backend/.env
+project_root = Path(__file__).parent.parent
+env_path = project_root / '.env'
 
-load_dotenv()
+load_dotenv(dotenv_path=env_path)
 
 DATABASE_URL = os.getenv('DATABASE_URL')
 

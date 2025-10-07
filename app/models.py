@@ -32,6 +32,6 @@ class OrganicRank(SQLModel, table=True):
     source: Optional[str] = Field(index=True)
     position: int = Field(index=True)
     link: Optional[str] = Field(index=True)
-        
+
     keyword_id: int = Field(foreign_key='keyword.id')
     keyword: Keyword = Relationship(back_populates='results')
