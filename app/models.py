@@ -7,7 +7,7 @@ from sqlmodel import Field, Relationship, Session, SQLModel, create_engine
 
 class Location(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True, index=True)
-    location: str = Field(index=True)
+    location: str = Field(index=True, unique=True)
 
     keywords: list['Keyword'] = Relationship(back_populates='location')
 

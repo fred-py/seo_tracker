@@ -6,6 +6,13 @@ from sqlmodel import select
 import asyncio
 
 
+async def get_keyword(keyword_text):
+    async with async_session() as session:
+        statement = select(Keyword).where(Keyword.keywords == keyword_text)
+        result = await session.exec(statement)
+    return result.first()
+
+
 async def get_rankings(
         city: str | None,
         keyword_text: str | None = None) -> list[dict]:
@@ -28,6 +35,8 @@ async def get_rankings(
         results = await session.exec(statement)
         for location, keyword, organic_rank in results:
             data = {
+                "location_id": location.id,
+                "keyword_id": keyword.id,
                 "location": location.location,
                 "keyword": keyword.keywords,
                 "position": organic_rank.position,
@@ -41,8 +50,8 @@ def main():
     Enables running/testing functions
     as a module
     """
-    asyncio.run(get_rankings('Dunsborough, Western Australia', 'carpet'))
-
+    #asyncio.run(get_rankings('Dunsborough, Western Australia'))
+    asyncio.run(get_keyword('carpet cleaning dunsborough'))
 
 if __name__ == "__main__":
     main()
