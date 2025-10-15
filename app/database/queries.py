@@ -45,13 +45,43 @@ async def get_rankings(
             print(data)
 
 
+async def get_rankings_by_location(location: str, source_url=None) -> OrganicRank:
+    """
+        Arg:
+        url to be retrieved from the database.
+        If no url is passed, defaults to unitedpropertyservices.au
+
+    """
+    if source_url is None:
+        source_url = "unitedpropertyservices.au"  # Defaults to united url
+
+    async with async_session() as session:
+        statement = (
+            select(OrganicRank, Keyword, Location)
+            .join(Keyword, OrganicRank.keyword_id == Keyword.id)
+            .join(Location, Keyword.location_id == Location.id)
+            .where(Location.location == location)
+            .where(OrganicRank.source == source_url)
+        )
+        results = await session.exec(statement)
+        for organic_rank, keyword, location in results:
+            data = {
+                "location": location.location,
+                "keyword": keyword.keywords,
+                "position": organic_rank.position,
+                "date": keyword.created_date,
+            }
+            print(data)
+
+
 def main():
     """
     Enables running/testing functions
     as a module
     """
-    #asyncio.run(get_rankings('Dunsborough, Western Australia'))
-    asyncio.run(get_keyword('carpet cleaning dunsborough'))
+    asyncio.run(get_rankings_by_location('Dunsborough, Western Australia', 'unitedpropertyservices.au'))
+    #asyncio.run(get_keyword('carpet cleaning dunsborough'))
+
 
 if __name__ == "__main__":
     main()

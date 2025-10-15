@@ -51,10 +51,16 @@ async def get_or_create_keyword(
 
         Output: Existing or new keyword object
     """
+    
+    
+    # NOTE: this needs UPDATING!!!
+    # Eg. if keyword exists but the recent search has different ranking
+    # Think about how to implement this logic!!
+    
     try:
         statement = select(Keyword).where(
             Keyword.keywords == keyword_text,
-            Keyword.location_id
+            Keyword.location_id == location.id,
         )
         result = await session.exec(statement)
         keyword = result.first()
@@ -73,6 +79,7 @@ async def get_or_create_keyword(
         print(f"Error: {e}")
         print(type(e))
         print(repr(e))
+        raise
 
     return keyword
 
@@ -130,39 +137,14 @@ async def save_organic_results(data: list[dict]):
         await session.commit()
 
 
-async def retrieve_target_url(source_url=None) -> OrganicRank:
-    """
-        Arg:
-        url to be retrieved from the database.
-        If no url is passed, defaults to unitedpropertyservices.au
-    """
-    if source_url is None:
-        source_url = "unitedpropertyservices.au"  # Defaults to united url
-    async with async_session() as session:
-        statement = (
-            select(OrganicRank, Keyword, Location)
-            .join(Keyword, OrganicRank.keyword_id == Keyword.id)
-            .join(Location, Keyword.location_id == Location.id)
-            .where(OrganicRank.source == source_url)
-        )
-        results = await session.exec(statement)
-        for organic_rank, keyword, location in results:
-            data = {
-                "location": location.location,
-                "keyword": keyword.keywords,
-                "position": organic_rank.position,
-                "date": keyword.created_date,
-            }
-            print(data)
-
 
 def main():
     """
     Enables running/testing functions
     as a module
     """
-    #asyncio.run(retrieve_target_url())
     asyncio.run(get_or_create_location(session, ))
+
 
 if __name__ == "__main__":
     main()
