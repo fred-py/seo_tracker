@@ -1,11 +1,22 @@
 from typing import Optional
 from datetime import date
-from sqlmodel import Field, Relationship, Session, SQLModel, create_engine
+from sqlmodel import Field, Relationship, SQLModel
+from enum import Enum
 
 from sqlalchemy import UniqueConstraint
 
 
 # ** GLOBAL MODELS **
+class ServiceEnum(str, Enum):
+    carpet = "carpet"
+    upholstery = "upholstery"
+    leather = "leather"
+    tile_grout = "tile_grout"
+    vinyl = "vinyl"
+    concrete = "concrete"
+    curtains = "curtains"
+    water_damage = "water_damage"
+
 
 class Location(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True, index=True)
@@ -19,7 +30,7 @@ class Keyword(SQLModel, table=True):
     keywords however keyword + location combos must be unique
     __table_args__ explicitly define the combo constraint"""
 
-    __table_args__ = (UniqueConstraint("keywords", "location_id"),)
+    __table_args__ = (UniqueConstraint('keywords', 'location_id'),)
     id: int | None = Field(default=None, primary_key=True, index=True)
     keywords: str = Field(index=True)
     # Service was added after data had been saved,

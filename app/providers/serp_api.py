@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 from dateutil import tz
 from datetime import datetime
 from backend.app.database.crud import save_organic_results
+from backend.app.models import ServiceEnum
+
 import asyncio
 
 load_dotenv()
@@ -59,7 +61,7 @@ class GetGoogleResults:
         data_dict = {
             'location': self.location,
             'keyword': keyword,
-            'created_date': date,
+            'checked_date': date,
             'rank': [],
         }
         try:
@@ -102,8 +104,8 @@ class GetGoogleResults:
             print(e)
 
 
-location_1 = "Margaret River, Western Australia, Australia"
-location_1_keywords = [
+mr = "Margaret River, Western Australia, Australia"
+mr_keywords = [
     "carpet cleaning margaret river",
     "carpet cleaner margaret river",
     "carpet cleaning",
@@ -113,8 +115,8 @@ location_1_keywords = [
     "rug cleaning margaret river"
 ]
 
-location_2 = "Busselton, Western Australia, Australia"
-location_2_keywords = [
+bus = "Busselton, Western Australia, Australia"
+bus_keywords = [
     "carpet cleaning busselton",
     "carpet cleaning busselton wa",
     "carpet cleaner busselton",
@@ -127,8 +129,8 @@ location_2_keywords = [
     "rug cleaning  busselton"
 ]
 
-location_3 = "Dunsborough, Western Australia"
-location_3_keywords = [
+duns = "Dunsborough, Western Australia"
+duns_keywords = [
         "carpet cleaner dunsborough",
         "carpet cleaning dunsborough",
         "carpet cleaners dunsborough area",
@@ -174,7 +176,9 @@ duns_upholstery_keys = [
 ]
 
 
-def main(location: str, keywords: list):
+def main(location: str,
+         keywords: list,
+         service: ServiceEnum):
     set_location = GetGoogleResults(location)
     data_list = []
 
@@ -187,9 +191,9 @@ def main(location: str, keywords: list):
     # This function needs to be called using asyncio.run()
     # Since save_organic_results is an async function
     # being called inside a regular function
-    pprint.pprint(type(data_list[0]['created_date']))
+    pprint.pprint(type(data_list[0]['checked_date']))
     pprint.pprint(data_list)
-    asyncio.run(save_organic_results(data_list))
+    asyncio.run(save_organic_results(data_list, service=service))
 
 
     #with open("duns_upholstery.json", "w") as f:
@@ -197,4 +201,4 @@ def main(location: str, keywords: list):
 
 
 if __name__ == '__main__':
-    main(location_3, location_3_keywords)
+    main(duns, duns_upholstery_keys, ServiceEnum.upholstery)

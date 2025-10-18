@@ -1,5 +1,5 @@
 from backend.app.db import async_session
-from backend.app.models import Location, Keyword, OrganicRank
+from backend.app.models import Location, Keyword, OrganicRank, ServiceEnum
 
 
 from sqlmodel import select
@@ -40,7 +40,7 @@ async def get_or_create_location(session, location_name: str) -> Location:
 async def get_or_create_keyword(
             session,
             keyword_text: str,
-            created_date,
+            service: ServiceEnum,
             location: Location
         ) -> Keyword:
     """
@@ -51,12 +51,7 @@ async def get_or_create_keyword(
 
         Output: Existing or new keyword object
     """
-    
-    
-    # NOTE: this needs UPDATING!!!
-    # Eg. if keyword exists but the recent search has different ranking
-    # Think about how to implement this logic!!
-    
+
     try:
         statement = select(Keyword).where(
             Keyword.keywords == keyword_text,
@@ -68,8 +63,8 @@ async def get_or_create_keyword(
         if keyword is None:
             keyword = Keyword(
                 keywords=keyword_text,
-                created_date=created_date,
                 location=location,
+                service=service,
             )
             session.add(keyword)
             await session.flush()
@@ -85,12 +80,18 @@ async def get_or_create_keyword(
 
 
 # https://sqlmodel.tiangolo.com/tutorial/relationship-attributes/create-and-update-relationships/#create-instances-with-relationship-attributes
-async def save_organic_results(data: list[dict]):
+async def save_organic_results(
+            data: list[dict],
+            service: ServiceEnum,
+        ):
     """
     Save organic search results to database.
 
     Args:
         data: List of search result dictionaries from SERP API
+
+        service: takes ServiceEnum type
+            - 
 
     Usage:
         await save_organic_results(api_response_data)
@@ -114,11 +115,11 @@ async def save_organic_results(data: list[dict]):
 
         for item in data:
             keyword_text = item['keyword']
-            created_date = item['created_date']
+            checked_date = item['checked_date']
             keyword = await get_or_create_keyword(
                     session,
                     keyword_text,
-                    created_date,
+                    service,
                     location
                 )
             # List comprehension to add ranks at once
@@ -129,6 +130,7 @@ async def save_organic_results(data: list[dict]):
                         source=rank_item['source'],
                         position=rank_item['position'],
                         link=rank_item['link'],
+                        checked_date=checked_date,
                         keyword=keyword,  # Set relationship between OrganicRank and Keyword model.
                 )
                 for rank_item in item['rank']
@@ -137,16 +139,13 @@ async def save_organic_results(data: list[dict]):
         await session.commit()
 
 
-
-
-
 def main():
     """
     Enables running/testing functions
     as a module
     """
-    asyncio.run(get_or_create_location(session, ))
-
+    #asyncio.run(get_or_create_location(session, ))
+    pass
 
 if __name__ == "__main__":
     main()
