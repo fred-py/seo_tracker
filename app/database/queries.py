@@ -5,6 +5,8 @@ from sqlmodel import select
 
 import asyncio
 
+import pprint
+
 
 async def get_keyword(keyword_text):
     async with async_session() as session:
@@ -74,12 +76,37 @@ async def get_rankings_by_location(location: str, source_url=None) -> OrganicRan
             print(data)
 
 
+async def add_or_update_service():
+    async with async_session() as session:
+        statement = (
+            select(Location, Keyword)
+            .join(Location, Keyword.location_id == Location.id)
+        )
+
+        results = await session.exec(statement)
+        location = results.all()  # .all() sqlmodel method
+        pprint.pprint(location)
+
+
+async def check_key_words():
+    async with async_session() as session:
+        statement = (
+            select(Keyword)
+        )
+
+        results = await session.exec(statement)
+        #location = results.all()  # .all() sqlmodel method
+        for keys in results:
+            print(keys)
+
 def main():
     """
     Enables running/testing functions
     as a module
     """
-    asyncio.run(get_rankings_by_location('Dunsborough, Western Australia', 'unitedpropertyservices.au'))
+    #asyncio.run(check_key_words())
+    asyncio.run(add_or_update_service())
+    #asyncio.run(get_rankings_by_location('Dunsborough, Western Australia', 'unitedpropertyservices.au'))
     #asyncio.run(get_keyword('carpet cleaning dunsborough'))
 
 

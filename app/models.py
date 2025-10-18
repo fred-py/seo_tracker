@@ -2,6 +2,8 @@ from typing import Optional
 from datetime import date
 from sqlmodel import Field, Relationship, Session, SQLModel, create_engine
 
+from sqlalchemy import UniqueConstraint
+
 
 # ** GLOBAL MODELS **
 
@@ -13,9 +15,16 @@ class Location(SQLModel, table=True):
 
 
 class Keyword(SQLModel, table=True):
+    """Location model is unique, Keyword model can have duplicate
+    keywords however keyword + location combos must be unique
+    __table_args__ explicitly define the combo constraint"""
+
+    __table_args__ = (UniqueConstraint("keywords", "location_id"),)
     id: int | None = Field(default=None, primary_key=True, index=True)
     keywords: str = Field(index=True)
-    created_date: date = Field(index=True)
+    # Service was added after data had been saved,
+    # hence is set to optional
+    service: str | None = Field(default=None, index=True)
     location_id: int = Field(foreign_key='location.id')
     location: Location = Relationship(back_populates='keywords')
 
@@ -32,6 +41,6 @@ class OrganicRank(SQLModel, table=True):
     source: Optional[str] = Field(index=True)
     position: int = Field(index=True)
     link: Optional[str] = Field(index=True)
-
+    checked_date: date | None = Field(default=None, index=True)
     keyword_id: int = Field(foreign_key='keyword.id')
     keyword: Keyword = Relationship(back_populates='results')
