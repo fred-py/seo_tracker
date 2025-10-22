@@ -18,6 +18,12 @@ class ServiceEnum(str, Enum):
     water_damage = "water_damage"
 
 
+class LocationEnum(str, Enum):
+    mr = 'Margaret River, Western Australia, Australia'
+    bus = 'Busselton, Western Australia, Australia'
+    duns = 'Dunsborough, Western Australia'
+
+
 class Location(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True, index=True)
     location: str = Field(index=True, unique=True)
