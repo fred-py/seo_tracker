@@ -201,4 +201,4 @@ def main(location: str,
 
 
 if __name__ == '__main__':
-    main(duns, duns_upholstery_keys, ServiceEnum.upholstery)
+    main(duns, duns_keywords, ServiceEnum.carpet)

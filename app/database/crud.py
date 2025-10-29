@@ -1,11 +1,12 @@
 from backend.app.db import async_session
-from backend.app.models import Location, Keyword, OrganicRank, ServiceEnum
+from backend.app.models import Location, Keyword, OrganicRank, ServiceEnum, LocationEnum
 
 
 from sqlmodel import select
 
 import asyncio
 
+import pprint
 
 async def get_or_create_location(session, location_name: str) -> Location:
     """
@@ -139,13 +140,51 @@ async def save_organic_results(
         await session.commit()
 
 
+async def get_keywords_by_location_service(
+        location: LocationEnum,
+        service: ServiceEnum) -> Location:
+
+    async with async_session() as session:
+        try:
+            statement = (
+                select(Keyword, Location)
+                .join(Location, Keyword.location_id == Location.id)
+                .where(Keyword.service == service)
+                .where(Location.location == location)
+            )
+            results = await session.exec(statement)
+            #keywords = results.all()
+            data = []
+            for keyword, loc in results:
+                d = {
+                    "location": loc.location,
+                    "keyword": keyword.keywords,
+                    #"service": keyword.service,
+                }
+                data.append(d)
+            return data
+            #return keywords
+        except Exception as e:
+            print(e)
+
+    
 def main():
     """
     Enables running/testing functions
     as a module
     """
     #asyncio.run(get_or_create_location(session, ))
-    pass
+    pprint.pprint(
+        asyncio.run(
+            get_keywords_by_location_service(
+                LocationEnum.mr,
+                ServiceEnum.carpet
+            )
+        )
+    )
+
+    #pass
+
 
 if __name__ == "__main__":
     main()

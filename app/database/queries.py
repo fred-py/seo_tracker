@@ -47,18 +47,16 @@ async def get_rankings(
             print(data)
 
 
-async def get_rank_by_service_location(
+async def get_url_rank_by_service_location(
         location: LocationEnum,
         service: ServiceEnum,
         link_url=None) -> OrganicRank:
     """
+        Retrieves rank for single url
+
         Arg:
         url to be retrieved from the database.
         If no url is passed, defaults to https://unitedpropertyservices.au/
-
-        Note: Under OrganicRank table, source row contains domain name:
-        unitedpropertyservices.au useful to retrive all results from
-        the same domain but different slugs eg. domain/home, domain/contact
 
         Link row contains the full url eg. https://unitedpropertyservices.au/
     """
@@ -76,16 +74,66 @@ async def get_rank_by_service_location(
                 .where(OrganicRank.link == link_url)
             )
             results = await session.exec(statement)
+            data = []
             for organic_rank, keyword, location in results:
-                data = {
+                d = {
                     "location": location.location,
                     "keyword": keyword.keywords,
                     "position": organic_rank.position,
                     "tile": organic_rank.title,
+                    "source": organic_rank.source,
                     "link": organic_rank.link,
                     "date": organic_rank.checked_date,
                 }
-                print(data)
+                data.append(d)
+            return data
+        except Exception as e:
+            print(e)
+
+
+async def get_domain_rank_by_service_location(
+        location: LocationEnum,
+        service: ServiceEnum,
+        domain=None) -> OrganicRank:
+    """
+        Retrieves rank for entire domain including all slugs.
+
+        Arg:
+        domain name to be retrieved from the database.
+        If no url is passed, defaults to unitedpropertyservices.au
+
+        Location and service:
+        eg. Location.Enum.mr, ServiceEnum.carpet
+
+        Source row contains the the domain eg. unitedpropertyservices.au
+    """
+    if domain is None:
+        domain = "unitedpropertyservices.au"  # Defaults to united domain
+
+    async with async_session() as session:
+        try:
+            statement = (
+                select(OrganicRank, Keyword, Location)
+                .join(Keyword, OrganicRank.keyword_id == Keyword.id)
+                .join(Location, Keyword.location_id == Location.id)
+                .where(Keyword.service == service)
+                .where(Location.location == location)
+                .where(OrganicRank.source == domain)
+            )
+            results = await session.exec(statement)
+            data = []
+            for organic_rank, keyword, location in results:
+                d = {
+                    "location": location.location,
+                    "keyword": keyword.keywords,
+                    "position": organic_rank.position,
+                    "tile": organic_rank.title,
+                    "source": organic_rank.source,
+                    "link": organic_rank.link,
+                    "date": organic_rank.checked_date,
+                }
+                data.append(d)
+            return data
         except Exception as e:
             print(e)
 
@@ -127,7 +175,18 @@ def main():
     """
     #asyncio.run(check_key_words())
     #asyncio.run(add_or_update_service())
-    asyncio.run(get_rank_by_service_location(LocationEnum.mr, ServiceEnum.carpet, 'https://unitedpropertyservices.au/'))
+    pprint.pprint(asyncio.run(get_domain_rank_by_service_location(
+        LocationEnum.mr,
+        ServiceEnum.carpet,
+        'unitedpropertyservices.au')
+    ))
+    print("###########################################")
+    
+    pprint.pprint(asyncio.run(get_url_rank_by_service_location(
+        LocationEnum.mr,
+        ServiceEnum.carpet,
+        'https://unitedpropertyservices.au/')
+    ))
     #asyncio.run(get_keyword('carpet cleaning dunsborough'))
 
 
