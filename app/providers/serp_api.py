@@ -7,6 +7,9 @@ from dateutil import tz
 from datetime import datetime
 from backend.app.database.crud import save_organic_results
 from backend.app.models import ServiceEnum
+from config import mr, bus, duns, mr_keywords, \
+    mr_upholstery_keys, bus_keywords, bus_upholstery_keys, \
+    duns_keywords, duns_upholstery_keys
 
 import asyncio
 
@@ -102,78 +105,6 @@ class GetGoogleResults:
                 return data
         except KeyError as e:
             print(e)
-
-
-mr = "Margaret River, Western Australia, Australia"
-mr_keywords = [
-    "carpet cleaning margaret river",
-    "carpet cleaner margaret river",
-    "carpet cleaning",
-    "carpet cleaning near me",
-    "above & beyond carpet cleaning margaret river",
-    "elite carpet cleaning",
-    "rug cleaning margaret river"
-]
-
-bus = "Busselton, Western Australia, Australia"
-bus_keywords = [
-    "carpet cleaning busselton",
-    "carpet cleaning busselton wa",
-    "carpet cleaner busselton",
-    "carpet cleaning",
-    "carpet cleaning near me",
-    "carpet cleaning busselton prices",
-    "elite carpet cleaning busselton",
-    "prime carpet cleaning busselton",
-    "professional carpet cleaner busselton",
-    "rug cleaning  busselton"
-]
-
-duns = "Dunsborough, Western Australia"
-duns_keywords = [
-        "carpet cleaner dunsborough",
-        "carpet cleaning dunsborough",
-        "carpet cleaners dunsborough area",
-        "carpet cleaning shampoo near me",
-        "carpet shampoo service near me",
-        "carpet cleaning",
-        "carpet cleaning near me",
-        "carpet stretch and clean near me"
-    ]
-
-mr_upholstery_keys = [
-    "couch cleaning margaret river",
-    "couch cleaner margaret river",
-    "cost to have upholstery cleaned",
-    "margaret river upholstery",
-    "upholstery cleaning busselton",
-    "upholstery cleaners busselton",
-    "upholstery cleaning margate",
-    "upholstery cleaning margaret river",
-    "upholstery cleaning",
-    "upholstery cleaning near me"
-]
-
-bus_upholstery_keys = [
-    "upholstery cleaning busselton",
-    "upholstery cleaner busselton",
-    "upholstery cleaners busselton",
-    "couch cleaning busselton",
-    "busselton upholstery",
-    "cost to have upholstery cleaned",
-    "upholstery cleaning",
-    "upholstery cleaning near me",
-    "couch cleaning cost",
-]
-
-duns_upholstery_keys = [
-    "couch cleaning busselton",
-    "dunsborough upholstery",
-    "upholstery cleaner dunsborough",
-    "upholstery cleaning busselton",
-    "upholstery cleaners busselton",
-    "upholstery cleaning near me",
-]
 
 
 def main(location: str,
