@@ -74,6 +74,7 @@ async def get_url_rank_by_service_location(
                 .where(OrganicRank.link == link_url)
             )
             results = await session.exec(statement)
+            print(f"HERE ARE THE DB RESULTS FOR URL RANK{results}")
             data = []
             for organic_rank, keyword, location in results:
                 d = {
@@ -120,9 +121,22 @@ async def get_domain_rank_by_service_location(
                 .where(Location.location == location)
                 .where(OrganicRank.source == domain)
             )
-            results = await session.exec(statement)
+
+            stat_unrakend = (
+                select(OrganicRank, Keyword, Location)
+                .join(Keyword, OrganicRank.keyword_id == Keyword.id)
+                .join(Location, Keyword.location_id == Location.id)
+                .where(Keyword.service == service)
+                .where(Location.location == location)
+                .where(OrganicRank.source != domain)
+            )
+            ranked = await session.exec(statement)
+            unranked = await session.exec(stat_unrakend)
+
             data = []
-            for organic_rank, keyword, location in results:
+            
+
+            for organic_rank, keyword, location in ranked:
                 d = {
                     "location": location.location,
                     "keyword": keyword.keywords,
@@ -133,12 +147,22 @@ async def get_domain_rank_by_service_location(
                     "date": organic_rank.checked_date,
                 }
                 data.append(d)
-            return data
+
+            for organic_rank, keyword, location in unranked:
+                unranked_keys = []
+                d = {
+                    "location": location.location,
+                    "keyword": keyword.keywords,
+                    "keyword_id": organic_rank.keyword_id,
+                    "date": organic_rank.checked_date,
+                }
+                unranked_keys.append(d)
+            return data, unranked_keys
         except Exception as e:
             print(e)
 
 
-async def find_unranked_keywords():
+async def find_unranked_keywords(data) -> Keyword:
     """Find keywords if any where a url
     does not rank in the top 10 results"""
     pass
@@ -176,17 +200,17 @@ def main():
     #asyncio.run(check_key_words())
     #asyncio.run(add_or_update_service())
     pprint.pprint(asyncio.run(get_domain_rank_by_service_location(
-        LocationEnum.mr,
-        ServiceEnum.carpet,
+        LocationEnum.bus,
+        ServiceEnum.tile_grout,
         'unitedpropertyservices.au')
     ))
     print("###########################################")
     
-    pprint.pprint(asyncio.run(get_url_rank_by_service_location(
-        LocationEnum.mr,
-        ServiceEnum.carpet,
-        'https://unitedpropertyservices.au/')
-    ))
+    #pprint.pprint(asyncio.run(get_url_rank_by_service_location(
+    #    LocationEnum.bus,
+    #    ServiceEnum.tile_grout,
+    #    'https://unitedpropertyservices.au/')
+    #))
     #asyncio.run(get_keyword('carpet cleaning dunsborough'))
 
 

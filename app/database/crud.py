@@ -8,6 +8,7 @@ import asyncio
 
 import pprint
 
+
 async def get_or_create_location(session, location_name: str) -> Location:
     """
         Helper function: Get existing location or create

@@ -7,9 +7,10 @@ from dateutil import tz
 from datetime import datetime
 from backend.app.database.crud import save_organic_results
 from backend.app.models import ServiceEnum
-from config import mr, bus, duns, mr_keywords, \
+from backend.app.providers.config import mr, bus, duns, mr_keywords, \
     mr_upholstery_keys, bus_keywords, bus_upholstery_keys, \
-    duns_keywords, duns_upholstery_keys
+    duns_keywords, duns_upholstery_keys, \
+    mr_tiles, bus_tiles, duns_tiles
 
 import asyncio
 
@@ -132,4 +133,4 @@ def main(location: str,
 
 
 if __name__ == '__main__':
-    main(duns, duns_upholstery_keys, ServiceEnum.upholstery)
+    main(duns, duns_tiles, ServiceEnum.tile_grout)
