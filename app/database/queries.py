@@ -122,24 +122,17 @@ async def get_domain_rank_by_service_location(
                 .where(OrganicRank.source == domain)
             )
 
-            stat_unrakend = (
-                select(OrganicRank, Keyword, Location)
-                .join(Keyword, OrganicRank.keyword_id == Keyword.id)
-                .join(Location, Keyword.location_id == Location.id)
-                .where(Keyword.service == service)
-                .where(Location.location == location)
-                .where(OrganicRank.source != domain)
-            )
             ranked = await session.exec(statement)
-            unranked = await session.exec(stat_unrakend)
-
-            data = []
             
-
-            for organic_rank, keyword, location in ranked:
+            # Get all keyword IDs for where domain ranks
+            ranked_keyword_ids = set()  # Using set(0 to avoid duplicates and faster lookup
+            data = []
+            for organic_rank, keyword, location_obj in ranked:
+                ranked_keyword_ids.add(keyword.id)
                 d = {
-                    "location": location.location,
+                    "location": location_obj.location,
                     "keyword": keyword.keywords,
+                    "keyword_id": keyword.id,
                     "position": organic_rank.position,
                     "tile": organic_rank.title,
                     "source": organic_rank.source,
@@ -148,24 +141,62 @@ async def get_domain_rank_by_service_location(
                 }
                 data.append(d)
 
-            for organic_rank, keyword, location in unranked:
-                unranked_keys = []
-                d = {
-                    "location": location.location,
-                    "keyword": keyword.keywords,
-                    "keyword_id": organic_rank.keyword_id,
-                    "date": organic_rank.checked_date,
-                }
-                unranked_keys.append(d)
-            return data, unranked_keys
+            # Get all keywords for service + location combo
+            get_all_statement = (
+                select(Keyword, Location)
+                .join(Location, Keyword.location_id == Location.id)
+                .where(Keyword.service == service)
+                .where(Location.location == location)
+            )
+
+            unranked = await session.exec(get_all_statement)
+
+            # Find keywords where domain does not rank
+            unranked_keys = []
+            for keyword, location_obj in unranked:
+                if keyword.id not in ranked_keyword_ids:
+                    d = {
+                        "location": location_obj.location,
+                        "keyword": keyword.keywords,
+                        "keyword_id": keyword.id,
+                    }
+                    unranked_keys.append(d)
+            return data, ranked_keyword_ids
         except Exception as e:
             print(e)
 
 
-async def find_unranked_keywords(data) -> Keyword:
+async def find_unranked_keywords(
+        location: LocationEnum,
+        service: ServiceEnum,
+        ) -> Keyword:
     """Find keywords if any where a url
     does not rank in the top 10 results"""
-    pass
+
+    ranked_ids = 
+    async with async_session() as session:
+        try:
+            # Get all keywords for service + location combo
+            get_all_statement = (
+                select(Keyword, Location)
+                .join(Location, Keyword.location_id == Location.id)
+                .where(Keyword.service == service)
+                .where(Location.location == location)
+            )
+            unranked = await session.exec(get_all_statement)
+            # Find keywords where domain does not rank
+            unranked_keys = []
+            for keyword, location_obj in unranked:
+                if keyword.id not in ranked_keyword_ids:
+                    d = {
+                        "location": location_obj.location,
+                        "keyword": keyword.keywords,
+                        "keyword_id": keyword.id,
+                    }
+                    unranked_keys.append(d)
+            return data, unranked_keys            
+        except:
+
 
 
 async def add_or_update_service():
