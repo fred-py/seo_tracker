@@ -95,17 +95,19 @@ async def get_url_rank_by_service_location(
 async def get_domain_rank_by_service_location(
         location: LocationEnum,
         service: ServiceEnum,
-        domain=None) -> OrganicRank:
+        domain=None,
+        ) -> OrganicRank:
     """
         Retrieves rank for entire domain including all slugs.
 
         Arg:
-        domain name to be retrieved from the database.
-        If no url is passed, defaults to unitedpropertyservices.au
 
         Location and service:
         eg. Location.Enum.mr, ServiceEnum.carpet
 
+        domain:
+        Domain name to be retrieved from the database.
+        If no url is passed, defaults to unitedpropertyservices.au
         Source row contains the the domain eg. unitedpropertyservices.au
     """
     if domain is None:
@@ -123,7 +125,7 @@ async def get_domain_rank_by_service_location(
             )
 
             ranked = await session.exec(statement)
-            
+
             # Get all keyword IDs for where domain ranks
             ranked_keyword_ids = set()  # Using set(0 to avoid duplicates and faster lookup
             data = []
@@ -140,28 +142,7 @@ async def get_domain_rank_by_service_location(
                     "date": organic_rank.checked_date,
                 }
                 data.append(d)
-
-            # Get all keywords for service + location combo
-            get_all_statement = (
-                select(Keyword, Location)
-                .join(Location, Keyword.location_id == Location.id)
-                .where(Keyword.service == service)
-                .where(Location.location == location)
-            )
-
-            unranked = await session.exec(get_all_statement)
-
-            # Find keywords where domain does not rank
-            unranked_keys = []
-            for keyword, location_obj in unranked:
-                if keyword.id not in ranked_keyword_ids:
-                    d = {
-                        "location": location_obj.location,
-                        "keyword": keyword.keywords,
-                        "keyword_id": keyword.id,
-                    }
-                    unranked_keys.append(d)
-            return data, ranked_keyword_ids
+            return data
         except Exception as e:
             print(e)
 
@@ -169,13 +150,31 @@ async def get_domain_rank_by_service_location(
 async def find_unranked_keywords(
         location: LocationEnum,
         service: ServiceEnum,
+        domain=None,
         ) -> Keyword:
     """Find keywords if any where a url
     does not rank in the top 10 results"""
-
-    ranked_ids = 
+    if domain is None:
+        domain = "unitedpropertyservices.au"  # Defaults to united domain
+    
     async with async_session() as session:
         try:
+            ranked_statement = (
+                select(OrganicRank, Keyword, Location)
+                .join(Keyword, OrganicRank.keyword_id == Keyword.id)
+                .join(Location, Keyword.location_id == Location.id)
+                .where(Keyword.service == service)
+                .where(Location.location == location)
+                .where(OrganicRank.source == domain)
+            )
+
+            ranked = await session.exec(ranked_statement)
+
+            # Get all keyword IDs for where domain ranks
+            ranked_keyword_ids = set()  # Using set(0 to avoid duplicates and faster lookup
+            for organic_rank, keyword, location_obj in ranked:
+                ranked_keyword_ids.add(keyword.id)
+            
             # Get all keywords for service + location combo
             get_all_statement = (
                 select(Keyword, Location)
@@ -194,9 +193,9 @@ async def find_unranked_keywords(
                         "keyword_id": keyword.id,
                     }
                     unranked_keys.append(d)
-            return data, unranked_keys            
-        except:
-
+            return unranked_keys            
+        except Exception as e:
+            print(e)
 
 
 async def add_or_update_service():
@@ -230,12 +229,18 @@ def main():
     """
     #asyncio.run(check_key_words())
     #asyncio.run(add_or_update_service())
-    pprint.pprint(asyncio.run(get_domain_rank_by_service_location(
+    #pprint.pprint(asyncio.run(get_domain_rank_by_service_location(
+    #    LocationEnum.bus,
+    #    ServiceEnum.tile_grout,
+    #    domain='unitedpropertyservices.au')
+    #))
+    #print("###########################################")
+
+    pprint.pprint(asyncio.run(find_unranked_keywords(
         LocationEnum.bus,
         ServiceEnum.tile_grout,
-        'unitedpropertyservices.au')
+        domain='unitedpropertyservices.au')
     ))
-    print("###########################################")
     
     #pprint.pprint(asyncio.run(get_url_rank_by_service_location(
     #    LocationEnum.bus,
