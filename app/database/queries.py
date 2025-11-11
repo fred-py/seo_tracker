@@ -7,6 +7,8 @@ import asyncio
 
 import pprint
 
+import polars as pl
+
 
 async def get_keyword(keyword_text):
     async with async_session() as session:
@@ -38,10 +40,10 @@ async def get_rankings(
         for location, keyword, organic_rank in results:
             data = {
                 "location_id": location.id,
-                "keyword_id": keyword.id,
-                "location": location.location,
                 "keyword": keyword.keywords,
                 "position": organic_rank.position,
+                "keyword_id": keyword.id,
+                "location": location.location,
                 "date": keyword.created_date,
             }
             print(data)
@@ -126,20 +128,17 @@ async def get_domain_rank_by_service_location(
 
             ranked = await session.exec(statement)
 
-            # Get all keyword IDs for where domain ranks
-            ranked_keyword_ids = set()  # Using set(0 to avoid duplicates and faster lookup
             data = []
             for organic_rank, keyword, location_obj in ranked:
-                ranked_keyword_ids.add(keyword.id)
                 d = {
                     "location": location_obj.location,
                     "keyword": keyword.keywords,
-                    "keyword_id": keyword.id,
                     "position": organic_rank.position,
-                    "tile": organic_rank.title,
                     "source": organic_rank.source,
                     "link": organic_rank.link,
+                    "title": organic_rank.title,
                     "date": organic_rank.checked_date,
+                    "keyword_id": keyword.id,
                 }
                 data.append(d)
             return data
@@ -222,33 +221,49 @@ async def check_key_words():
             print(keys)
 
 
+async def run_all_queries():
+    """Run all queries in a single event loop"""
+    
+    # Run first query
+    ranked_results = await get_domain_rank_by_service_location(
+        LocationEnum.duns,
+        ServiceEnum.tile_grout,
+        domain='unitedpropertyservices.au'
+    )
+    print("Ranked Results:")
+    pprint.pprint(ranked_results)
+    print("###########################################")
+
+    # Save to CSV
+    if ranked_results:
+        df_ranked = pl.DataFrame(ranked_results)
+        df_ranked.write_csv("ranked_results.csv")
+        print(f"✅ Saved {len(df_ranked)} ranked results to ranked_results.csv")
+    
+    # Run second query
+    unranked_results = await find_unranked_keywords(
+        LocationEnum.duns,
+        ServiceEnum.tile_grout,
+        domain='unitedpropertyservices.au'
+    )
+    print("Unranked Results:")
+    pprint.pprint(unranked_results)
+    print("###########################################")
+
+    # Save to CSV
+    if unranked_results:
+        df_unranked = pl.DataFrame(unranked_results)
+        df_unranked.write_csv("unranked_keywords.csv")
+        print(f"✅ Saved {len(df_unranked)} unranked keywords to unranked_keywords.csv")
+
+
 def main():
     """
     Enables running/testing functions
     as a module
     """
-    #asyncio.run(check_key_words())
-    #asyncio.run(add_or_update_service())
-    #pprint.pprint(asyncio.run(get_domain_rank_by_service_location(
-    #    LocationEnum.bus,
-    #    ServiceEnum.tile_grout,
-    #    domain='unitedpropertyservices.au')
-    #))
-    #print("###########################################")
 
-    pprint.pprint(asyncio.run(find_unranked_keywords(
-        LocationEnum.bus,
-        ServiceEnum.tile_grout,
-        domain='unitedpropertyservices.au')
-    ))
-    
-    #pprint.pprint(asyncio.run(get_url_rank_by_service_location(
-    #    LocationEnum.bus,
-    #    ServiceEnum.tile_grout,
-    #    'https://unitedpropertyservices.au/')
-    #))
-    #asyncio.run(get_keyword('carpet cleaning dunsborough'))
-
+    asyncio.run(run_all_queries())
 
 if __name__ == "__main__":
     main()
