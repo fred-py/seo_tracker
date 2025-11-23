@@ -78,9 +78,9 @@ async def get_url_rank_by_service_location(
             results = await session.exec(statement)
             print(f"HERE ARE THE DB RESULTS FOR URL RANK{results}")
             data = []
-            for organic_rank, keyword, location in results:
+            for organic_rank, keyword, location_obj in results:
                 d = {
-                    "location": location.location,
+                    "location": location_obj.location,
                     "keyword": keyword.keywords,
                     "position": organic_rank.position,
                     "tile": organic_rank.title,
@@ -155,7 +155,7 @@ async def find_unranked_keywords(
     does not rank in the top 10 results"""
     if domain is None:
         domain = "unitedpropertyservices.au"  # Defaults to united domain
-    
+
     async with async_session() as session:
         try:
             ranked_statement = (
@@ -173,7 +173,7 @@ async def find_unranked_keywords(
             ranked_keyword_ids = set()  # Using set(0 to avoid duplicates and faster lookup
             for organic_rank, keyword, location_obj in ranked:
                 ranked_keyword_ids.add(keyword.id)
-            
+
             # Get all keywords for service + location combo
             get_all_statement = (
                 select(Keyword, Location)
@@ -192,7 +192,7 @@ async def find_unranked_keywords(
                         "keyword_id": keyword.id,
                     }
                     unranked_keys.append(d)
-            return unranked_keys            
+            return unranked_keys 
         except Exception as e:
             print(e)
 
@@ -265,5 +265,12 @@ def main():
 
     asyncio.run(run_all_queries())
 
+
 if __name__ == "__main__":
-    main()
+    #main()
+    data_slug = asyncio.run(get_url_rank_by_service_location(
+        LocationEnum.mr,
+        ServiceEnum.carpet,
+        'https://unitedpropertyservices.au/carpet-cleaning-busselton-margaret-river/',)
+    )
+    pprint.pprint(data_slug)
