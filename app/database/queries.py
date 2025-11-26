@@ -149,12 +149,12 @@ async def get_domain_rank_by_service_location(
 async def find_unranked_keywords(
         location: LocationEnum,
         service: ServiceEnum,
-        domain=None,
+        link=None,
         ) -> Keyword:
     """Find keywords if any where a url
     does not rank in the top 10 results"""
-    if domain is None:
-        domain = "unitedpropertyservices.au"  # Defaults to united domain
+    if link is None:
+        link = "https://unitedpropertyservices.au/"  # Defaults to united domain
 
     async with async_session() as session:
         try:
@@ -164,7 +164,7 @@ async def find_unranked_keywords(
                 .join(Location, Keyword.location_id == Location.id)
                 .where(Keyword.service == service)
                 .where(Location.location == location)
-                .where(OrganicRank.source == domain)
+                .where(OrganicRank.link == link)
             )
 
             ranked = await session.exec(ranked_statement)
