@@ -36,7 +36,6 @@ data_home, unranked = asyncio.run(fetch_all_data())
 df = pl.DataFrame(data_home).sort(by='date')
 
 df_unranked = pl.DataFrame(unranked)
-print(df_unranked)
 
 # NOTE: When scattermode is set to 'group' it will override
 # autorange and display 0 as min. value on yaxis 
@@ -46,6 +45,7 @@ rank_min = df['position'].min()
 rank_max = df['position'].max()
 # Select first row url
 url = df['link'][0]
+location = df['location'][0]
 
 fig = go.Figure()
 
@@ -58,14 +58,27 @@ for keyword in df['keyword'].unique():  # Manually loop over unique keyword colu
         y=keyword_data['position'],
         mode='lines+markers',
         name=keyword,
+        legend='legend',
+        showlegend=True
     ))
 
 
-#for unranked in df['keyword']:
-#    unraked_data
-#    fig.add_box(
-#        name=unranked
-#    )
+for keywords in df_unranked['keyword']:
+    keyword_data = df.filter(pl.col('keyword') == keyword)
+    fig.add_trace(go.Scatter(
+        x=keyword_data,
+        y=keyword_data['location'],
+        mode='markers',
+        name=keywords,
+        legend='legend2',
+        showlegend=True,
+        marker=dict(
+            color='lightgray',
+            size=8,
+            symbol='x'
+        ),
+    ))
+    
 
 fig.update_yaxes(
     #autorange='reversed',   # set Y axis to descending order
@@ -82,7 +95,7 @@ fig.update_layout(
         # Setting to paper moves the title slightly to the right
         xref='paper',
         subtitle=dict(
-            text=f'URL: {url}'
+            text=f'Location: {location}  |  URL: {url}'
         ),
     ),
 
@@ -93,12 +106,17 @@ fig.update_layout(
             text='Ranked Keywords',
         ),
         y=0.99,
+        x=1.02,
+        xanchor='left',
     ),
     legend2=dict(
         title=dict(
             text='Unranked Keywords',
+            
         ),
-        y=0.99,
+        y=0.77,
+        x=1.02,
+        xanchor='left',
     ),
 
     xaxis=dict(
