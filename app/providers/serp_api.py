@@ -108,9 +108,11 @@ class GetGoogleResults:
             print(e)
 
 
-def main(location: str,
-         keywords: list,
-         service: ServiceEnum):
+async def fetch_and_save(
+        location: str,
+        keywords: list,
+        service: ServiceEnum):
+
     set_location = GetGoogleResults(location)
     data_list = []
 
@@ -120,19 +122,41 @@ def main(location: str,
         data = set_location.get_organic_results(raw, keyword)
         data_list.append(data)
 
-    # This function needs to be called using asyncio.run()
-    # Since save_organic_results is an async function
-    # being called inside a regular function
-    pprint.pprint(type(data_list[0]['checked_date']))
-    pprint.pprint(data_list)
-    asyncio.run(save_organic_results(data_list, service=service))
+    #pprint.pprint(type(data_list[0]['checked_date']))
+    #pprint.pprint(data_list)
+    await save_organic_results(data_list, service=service)
 
 
-    #with open("duns_upholstery.json", "w") as f:
-    #    json.dump(data_list, f, indent=2)
+async def save_all_concurrently():
+    """Fetch and save all data concurrenlty
+    in batches by service type.
+    Must be done in batches to avoid rate limit."""
+
+    # Carpet - Batch 1
+    await asyncio.gather(
+        fetch_and_save(mr, mr_keywords, ServiceEnum.carpet),
+        fetch_and_save(bus, bus_keywords, ServiceEnum.carpet),
+        fetch_and_save(duns, duns_keywords, ServiceEnum.carpet),
+    )
+    #  Add delay between batches
+    await asyncio.sleep(2)
+
+    # Upholstery
+    await asyncio.gather(
+        fetch_and_save(mr, mr_upholstery_keys, ServiceEnum.upholstery),
+        fetch_and_save(bus, bus_upholstery_keys, ServiceEnum.upholstery),
+        fetch_and_save(duns, duns_upholstery_keys, ServiceEnum.upholstery),
+    )
+
+    await asyncio.sleep(2)
+
+    # Tiles
+    await asyncio.gather(
+        fetch_and_save(mr, mr_tiles, ServiceEnum.tile_grout),
+        fetch_and_save(bus, bus_tiles, ServiceEnum.tile_grout),
+        fetch_and_save(duns, duns_tiles, ServiceEnum.tile_grout),
+    )
 
 
 if __name__ == '__main__':
-    #main(bus, bus_upholstery_keys, ServiceEnum.upholstery)
-    #main(mr, mr_upholstery_keys, ServiceEnum.upholstery)
-    main(duns, duns_upholstery_keys, ServiceEnum.upholstery)
+    asyncio.run(save_all_concurrently())

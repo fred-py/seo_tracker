@@ -9,31 +9,37 @@ from backend.app.models import LocationEnum, ServiceEnum
 import asyncio
 import plotly.graph_objects as go 
 
-# Fetch data
 
-async def fetch_all_data():
-    """Fetches all data concurrenlty"""
-    data_home, unranked = await asyncio.gather(
+async def fetch_ranked_and_unranked_data(location_enum, service_enum, url):
+    """Fetches all data concurrently"""
+    data, unranked = await asyncio.gather(
         get_url_rank_by_service_location(
-            LocationEnum.mr,
-            ServiceEnum.carpet,
-            'https://unitedpropertyservices.au/'
+            location_enum,
+            service_enum,
+            url
         ),
         find_unranked_keywords(
-            LocationEnum.mr,
-            ServiceEnum.carpet,
-            'https://unitedpropertyservices.au/'
+            location_enum,
+            service_enum,
+            url
         ),
     )
-    return data_home, unranked
+    return data, unranked
 
-data_home, unranked = asyncio.run(fetch_all_data())
+
+async def 
+home_url, unranked = asyncio.run(
+    fetch_ranked_and_unranked_data(
+        LocationEnum.bus,
+        ServiceEnum.carpet,
+        'https://unitedpropertyservices.au/'
+    ))
 
 
 # https://plotly.com/python-api-reference/generated/plotly.express.line
 # NOTE: By default line charts are implemented in order they are provided
 # Sorting by date stops the lines jumping backwards on the chart.
-df = pl.DataFrame(data_home).sort(by='date')
+df = pl.DataFrame(data).sort(by='date')
 
 df_unranked = pl.DataFrame(unranked)
 
@@ -59,7 +65,10 @@ for keyword in df['keyword'].unique():  # Manually loop over unique keyword colu
         mode='lines+markers',
         name=keyword,
         legend='legend',
-        showlegend=True
+        showlegend=True,
+        marker=dict(
+            size=9
+        )
     ))
 
 
@@ -114,7 +123,7 @@ fig.update_layout(
             text='Unranked Keywords',
             
         ),
-        y=0.77,
+        y=0.5,
         x=1.02,
         xanchor='left',
     ),
@@ -137,7 +146,7 @@ fig.update_layout(
 
     # Offset lines to be visible when overlap occurs
     scattermode='group',
-    scattergap=0.5,  
+    scattergap=0.1,  
 )
 
 
