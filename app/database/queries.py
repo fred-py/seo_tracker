@@ -76,7 +76,6 @@ async def get_url_rank_by_service_location(
                 .where(OrganicRank.link == link_url)
             )
             results = await session.exec(statement)
-            print(f"HERE ARE THE DB RESULTS FOR URL RANK{results}")
             data = []
             for organic_rank, keyword, location_obj in results:
                 d = {
@@ -266,11 +265,15 @@ def main():
     asyncio.run(run_all_queries())
 
 
+
+
 if __name__ == "__main__":
     #main()
-    data_slug = asyncio.run(get_url_rank_by_service_location(
-        LocationEnum.mr,
+    #'https://unitedpropertyservices.au/carpet-cleaning-busselton-margaret-river/'
+    data = asyncio.run(get_url_rank_by_service_location(
+        LocationEnum.bus,
         ServiceEnum.carpet,
-        'https://unitedpropertyservices.au/carpet-cleaning-busselton-margaret-river/',)
+        'https://unitedpropertyservices.au/' 
+        ,)
     )
-    pprint.pprint(data_slug)
+    pprint.pprint(data)

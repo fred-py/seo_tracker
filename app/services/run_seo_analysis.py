@@ -7,12 +7,13 @@ from backend.app.database.queries import get_url_rank_by_service_location, \
     get_domain_rank_by_service_location, find_unranked_keywords
 from backend.app.models import LocationEnum, ServiceEnum
 import asyncio
-import plotly.graph_objects as go 
+import plotly.graph_objects as go
+import pprint
 
 
 async def fetch_ranked_and_unranked_data(location_enum, service_enum, url):
     """Fetches all data concurrently"""
-    data, unranked = await asyncio.gather(
+    ranked, unranked = await asyncio.gather(
         get_url_rank_by_service_location(
             location_enum,
             service_enum,
@@ -24,24 +25,63 @@ async def fetch_ranked_and_unranked_data(location_enum, service_enum, url):
             url
         ),
     )
-    return data, unranked
+    return ranked, unranked
 
 
-async def 
-home_url, unranked = asyncio.run(
+def newly_ranked_keyword(data):
+    """
+    Identify newly ranked keywords.
+    This function will return keywords
+    that were not ranking in the top 10
+    when keywords data was first saved
+    in the database
+
+    Args:
+        Takes the rank results from
+        fetch_ranked_and_unraked_data
+        function
+    """
+    # Get all dates in the column
+    all_dates = [d['date']for d in data]
+    # Get earliest (minimum) date
+    first_saved = min(all_dates)
+    newly_added = []
+
+    for d in data:
+        d = data['date']
+        if d not in first_saved:
+            new = {
+                "location": data['location'],
+                "keyword": data['keyword'],
+                "position": data['position'],
+                "tile": data['title'],
+                "source": data['source'],
+                "link": data['link'],
+                "date": data['checked_date'],
+            }
+            newly_added.append(new)
+
+    pprint.pprint(newly_added)
+    return first_saved
+
+
+home_url_ranked, unranked = asyncio.run(
     fetch_ranked_and_unranked_data(
         LocationEnum.bus,
         ServiceEnum.carpet,
         'https://unitedpropertyservices.au/'
     ))
 
+newly_ranked_keyword(home_url_ranked)
 
 # https://plotly.com/python-api-reference/generated/plotly.express.line
 # NOTE: By default line charts are implemented in order they are provided
 # Sorting by date stops the lines jumping backwards on the chart.
-df = pl.DataFrame(data).sort(by='date')
+df = pl.DataFrame(home_url_ranked).sort(by='date')
 
 df_unranked = pl.DataFrame(unranked)
+
+#df_new = pl.DataFrame(newly_ranked)
 
 # NOTE: When scattermode is set to 'group' it will override
 # autorange and display 0 as min. value on yaxis 
