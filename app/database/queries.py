@@ -80,9 +80,11 @@ async def get_url_rank_by_service_location(
             for organic_rank, keyword, location_obj in results:
                 d = {
                     "location": location_obj.location,
+                    "service": keyword.service,
+                    "id": keyword.id,
                     "keyword": keyword.keywords,
                     "position": organic_rank.position,
-                    "tile": organic_rank.title,
+                    "title": organic_rank.title,
                     "source": organic_rank.source,
                     "link": organic_rank.link,
                     "date": organic_rank.checked_date,
@@ -265,15 +267,14 @@ def main():
     asyncio.run(run_all_queries())
 
 
-
-
 if __name__ == "__main__":
     #main()
     #'https://unitedpropertyservices.au/carpet-cleaning-busselton-margaret-river/'
     data = asyncio.run(get_url_rank_by_service_location(
         LocationEnum.bus,
-        ServiceEnum.carpet,
-        'https://unitedpropertyservices.au/' 
+        ServiceEnum.tile_grout,
+        'https://unitedpropertyservices.au/carpet-cleaning-busselton-margaret-river/'
+        #'https://unitedpropertyservices.au/' 
         ,)
     )
     pprint.pprint(data)

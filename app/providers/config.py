@@ -79,7 +79,7 @@ mr_tiles = [
     "tile and grout cleaning nearby",
     "tile and grout cleaning",
     "tile and grout cleaning margaret river",
-    "tile and grout cleaning near Margaret River WA"
+    "tile and grout cleaning near Margaret River WA",
     "tile and grout cleaning near me",
     "tile and grout cleaning busselton",
     "tile cleaning",

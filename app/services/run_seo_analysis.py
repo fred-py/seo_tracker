@@ -28,7 +28,33 @@ async def fetch_ranked_and_unranked_data(location_enum, service_enum, url):
     return ranked, unranked
 
 
-def newly_ranked_keyword(data):
+def get_earliest_ids(data) -> set:
+    """
+    Retrieve the keyword.id from
+    keywords that were added to the
+    database on the earliest recorded
+    date.
+
+    Args:
+        Takes the rank results from
+        fetch_ranked_and_unraked_data
+        function
+    """
+
+    # Get all dates in the column
+    all_dates = [d['date']for d in data]
+    # Get earliest (minimum) date
+    earliest_date = min(all_dates)
+    ids = set([])  # Set to avoid duplicates
+    for d in data:
+        date = d['date']
+        if date == earliest_date:
+            i = d['id']
+            ids.add(i)
+    return ids
+
+
+def get_recently_ranked_keyword(data, ids: set):
     """
     Identify newly ranked keywords.
     This function will return keywords
@@ -37,42 +63,41 @@ def newly_ranked_keyword(data):
     in the database
 
     Args:
-        Takes the rank results from
-        fetch_ranked_and_unraked_data
-        function
+        1.Takes the rank results from
+        fetch_ranked_and_unraked_data function
+
+        2. Takes ids set from
+        get_earliest_ids function
     """
-    # Get all dates in the column
-    all_dates = [d['date']for d in data]
-    # Get earliest (minimum) date
-    first_saved = min(all_dates)
-    newly_added = []
-
+    ids_set = ids
+    newly_ranked = set([])  # Set to avoid duplicates
     for d in data:
-        d = data['date']
-        if d not in first_saved:
-            new = {
-                "location": data['location'],
-                "keyword": data['keyword'],
-                "position": data['position'],
-                "tile": data['title'],
-                "source": data['source'],
-                "link": data['link'],
-                "date": data['checked_date'],
-            }
-            newly_added.append(new)
+        id = d['id']
+        if id not in ids_set:
+            # NOTE: this loop can retrieve
+            # additional dates for when the keyword's
+            # ranking was checked. However, in this function
+            keyword = d['keyword']
+            newly_ranked.add(keyword)
 
-    pprint.pprint(newly_added)
-    return first_saved
+    pprint.pprint(newly_ranked)
+    return newly_ranked
 
 
+#'https://unitedpropertyservices.au/carpet-cleaning-busselton-margaret-river/'
 home_url_ranked, unranked = asyncio.run(
     fetch_ranked_and_unranked_data(
-        LocationEnum.bus,
+        LocationEnum.mr,
         ServiceEnum.carpet,
-        'https://unitedpropertyservices.au/'
+        'https://unitedpropertyservices.au/',
+        #'https://unitedpropertyservices.au/carpet-cleaning-busselton-margaret-river/'
     ))
 
-newly_ranked_keyword(home_url_ranked)
+
+ids = get_earliest_ids(home_url_ranked)
+
+get_recently_ranked_keyword(home_url_ranked, ids)
+
 
 # https://plotly.com/python-api-reference/generated/plotly.express.line
 # NOTE: By default line charts are implemented in order they are provided
@@ -92,6 +117,7 @@ rank_max = df['position'].max()
 # Select first row url
 url = df['link'][0]
 location = df['location'][0]
+service = df['service'][0]
 
 fig = go.Figure()
 
@@ -144,7 +170,7 @@ fig.update_layout(
         # Setting to paper moves the title slightly to the right
         xref='paper',
         subtitle=dict(
-            text=f'Location: {location}  |  URL: {url}'
+            text=f'Location: {location}  |  Service: {service}  |  URL: {url}'
         ),
     ),
 
