@@ -70,15 +70,18 @@ def get_recently_ranked_keyword(data, ids: set):
         get_earliest_ids function
     """
     ids_set = ids
-    newly_ranked = set([])  # Set to avoid duplicates
+    newly_ranked = {}
     for d in data:
         id = d['id']
         if id not in ids_set:
             # NOTE: this loop can retrieve
             # additional dates for when the keyword's
             # ranking was checked. However, in this function
-            keyword = d['keyword']
-            newly_ranked.add(keyword)
+            n = {
+                'keyword': d['keyword']
+            }
+            if n['keyword'] not in newly_ranked:
+                newly_ranked.update(n)
 
     pprint.pprint(newly_ranked)
     return newly_ranked
@@ -87,7 +90,7 @@ def get_recently_ranked_keyword(data, ids: set):
 #'https://unitedpropertyservices.au/carpet-cleaning-busselton-margaret-river/'
 home_url_ranked, unranked = asyncio.run(
     fetch_ranked_and_unranked_data(
-        LocationEnum.mr,
+        LocationEnum.bus,
         ServiceEnum.carpet,
         'https://unitedpropertyservices.au/',
         #'https://unitedpropertyservices.au/carpet-cleaning-busselton-margaret-river/'
@@ -95,9 +98,9 @@ home_url_ranked, unranked = asyncio.run(
 
 
 ids = get_earliest_ids(home_url_ranked)
-
-get_recently_ranked_keyword(home_url_ranked, ids)
-
+# Set() type does not work when constructing dataframe
+# Hence dict method
+recent = get_recently_ranked_keyword(home_url_ranked, ids)
 
 # https://plotly.com/python-api-reference/generated/plotly.express.line
 # NOTE: By default line charts are implemented in order they are provided
@@ -106,7 +109,7 @@ df = pl.DataFrame(home_url_ranked).sort(by='date')
 
 df_unranked = pl.DataFrame(unranked)
 
-#df_new = pl.DataFrame(newly_ranked)
+df_new = pl.DataFrame(recent)
 
 # NOTE: When scattermode is set to 'group' it will override
 # autorange and display 0 as min. value on yaxis 
@@ -137,7 +140,6 @@ for keyword in df['keyword'].unique():  # Manually loop over unique keyword colu
         )
     ))
 
-
 for keywords in df_unranked['keyword']:
     keyword_data = df.filter(pl.col('keyword') == keyword)
     fig.add_trace(go.Scatter(
@@ -148,12 +150,28 @@ for keywords in df_unranked['keyword']:
         legend='legend2',
         showlegend=True,
         marker=dict(
-            color='lightgray',
+            color='red',
             size=8,
             symbol='x'
         ),
     ))
-    
+
+
+for keywords in df_new['keyword']:
+    keyword_data = df.filter(pl.col('keyword') == keyword)
+    fig.add_trace(go.Scatter(
+        x=keyword_data,
+        y=keyword_data['location'],
+        mode='markers',
+        name=keywords,
+        legend='legend3',
+        showlegend=True,
+        marker=dict(
+            color='Green',
+            size=10,
+            symbol='arrow'
+        ),
+    ))
 
 fig.update_yaxes(
     #autorange='reversed',   # set Y axis to descending order
@@ -190,6 +208,15 @@ fig.update_layout(
             
         ),
         y=0.5,
+        x=1.02,
+        xanchor='left',
+    ),
+    legend3=dict(
+        title=dict(
+            text='Recently Ranked Keywords',
+            
+        ),
+        y=0.1,
         x=1.02,
         xanchor='left',
     ),
