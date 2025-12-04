@@ -70,21 +70,28 @@ def get_recently_ranked_keyword(data, ids: set):
         get_earliest_ids function
     """
     ids_set = ids
-    newly_ranked = {}
+    newly_ranked = set([])  # Use set to avoid duplicates
+    new = []
     for d in data:
         id = d['id']
         if id not in ids_set:
             # NOTE: this loop can retrieve
             # additional dates for when the keyword's
             # ranking was checked. However, in this function
-            n = {
-                'keyword': d['keyword']
-            }
-            if n['keyword'] not in newly_ranked:
-                newly_ranked.update(n)
+            n = d['keyword']
+            newly_ranked.add(n)
+    # NOTE: Polars DataFrame Constructor cannot
+    # be called with type 'set'
+    # Create list of dictionary from
+    # newly_rank set into to be
+    # converted into a polars DataFrame
+    for key in newly_ranked:
+        n = {
+            'keyword': key
+        }
+        new.append(n)
 
-    pprint.pprint(newly_ranked)
-    return newly_ranked
+    return new
 
 
 #'https://unitedpropertyservices.au/carpet-cleaning-busselton-margaret-river/'
