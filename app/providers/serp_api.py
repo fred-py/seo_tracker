@@ -131,7 +131,7 @@ async def save_all_concurrently():
     """Fetch and save all data concurrenlty
     in batches by service type.
     Must be done in batches to avoid rate limit."""
-    """
+    
     # Carpet - Batch 1
     await asyncio.gather(
         fetch_and_save(mr, mr_keywords, ServiceEnum.carpet),
@@ -148,7 +148,7 @@ async def save_all_concurrently():
         fetch_and_save(duns, duns_upholstery_keys, ServiceEnum.upholstery),
     )
 
-    await asyncio.sleep(2)"""
+    await asyncio.sleep(2)
 
     # Tiles
     await asyncio.gather(

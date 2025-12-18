@@ -3,6 +3,8 @@ Plotly graph objects enables more customisation
 """
 
 import polars as pl
+from polars.exceptions import ColumnNotFoundError
+
 from backend.app.services.seo_logic import fetch_ranked_and_unranked_data, get_earliest_ids, \
     get_recently_ranked_keyword
 
@@ -16,19 +18,115 @@ import pprint
 #'https://unitedpropertyservices.au/carpet-cleaning-busselton-margaret-river/'
 home_url_ranked, unranked = asyncio.run(
     fetch_ranked_and_unranked_data(
-        LocationEnum.bus,
+        LocationEnum.mr,
         ServiceEnum.carpet,
         'https://unitedpropertyservices.au/',
         #'https://unitedpropertyservices.au/carpet-cleaning-busselton-margaret-river/'
     ))
+
+pprint.pprint(home_url_ranked)
 
 
 ids = get_earliest_ids(home_url_ranked)
 recent = get_recently_ranked_keyword(home_url_ranked, ids)
 
 
-def plot_line_chart(data):
+def plot_lines_markers_ranked(fig, df, unranked):
+    # Manually loop over unique keyword column - plotly express does this automatically
+    for keyword in df['keyword'].unique():
+        # Filter data for specific keyword on each iteration
+        keyword_data = df.filter(pl.col('keyword') == keyword)
+
+        fig.add_trace(go.Scatter(
+            x=keyword_data['date'],
+            y=keyword_data['position'],
+            mode='lines+markers',
+            name=keyword,
+            legend='legend',
+            showlegend=True,
+            marker=dict(
+                size=9
+            )
+        ))
+
+    unranked_keys = pl.DataFrame(unranked)
+    try:
+        for keyword in unranked_keys['keyword']:
+            keyword_data = df.filter(pl.col('keyword') == keyword)
+            fig.add_trace(go.Scatter(
+                    x=keyword_data,
+                    y=keyword_data['location'],
+                    mode='markers',
+                    name=keyword,
+                    legend='legend2',
+                    showlegend=True,
+                    marker=dict(
+                        color='red',
+                        size=8,
+                        symbol='x'
+                    ),
+                ))
+    except ColumnNotFoundError:
+        return None
+
+    return fig
+
+
+def list_unranked_keywords(fig, unranked, ranked):
+    df = pl.DataFrame(unranked)
+    try:
+        for keyword in df['keyword']:
+            keyword_data = ranked.filter(pl.col('keyword') == keyword)
+            fig.add_trace(go.Scatter(
+                    x=keyword_data,
+                    y=keyword_data['location'],
+                    mode='markers',
+                    name=keyword,
+                    legend='legend2',
+                    showlegend=True,
+                    marker=dict(
+                        color='red',
+                        size=8,
+                        symbol='x'
+                    ),
+                ))
+    except ColumnNotFoundError:
+        return None
+    return fig
+
+
+def plot_markers(data):
     pass
+
+
+def check_unranked_keywords(data):
+    """"""
+    
+    try:
+        for keywords in df_unranked['keyword']:
+            keyword_data = df.filter(pl.col('keyword') == keyword)
+            fig.add_trace(go.Scatter(
+                x=keyword_data,
+                y=keyword_data['location'],
+                mode='markers',
+                name=keywords,
+                legend='legend2',
+                showlegend=True,
+                marker=dict(
+                    color='red',
+                    size=8,
+                    symbol='x'
+                ),
+            ))
+        df = pl.DataFrame(data)
+        print(df)
+    except ColumnNotFoundError:
+        df = {
+                "keyword": "All set keywords currently rank in the top 10"
+            }
+        return df
+    return df
+
 
 
 # https://plotly.com/python-api-reference/generated/plotly.express.line
@@ -36,9 +134,9 @@ def plot_line_chart(data):
 # Sorting by date stops the lines jumping backwards on the chart.
 df = pl.DataFrame(home_url_ranked).sort(by='date')
 
-df_unranked = pl.DataFrame(unranked)
+#df_unranked = check_unranked_keywords(unranked)
 
-df_new = pl.DataFrame(recent)
+#df_new = pl.DataFrame(recent)
 
 # NOTE: When scattermode is set to 'group' it will override
 # autorange and display 0 as min. value on yaxis 
@@ -52,7 +150,7 @@ location = df['location'][0]
 service = df['service'][0]
 
 fig = go.Figure()
-
+"""
 for keyword in df['keyword'].unique():  # Manually loop over unique keyword column - plotly express does this automatically
     # Filter data for specific keyword on each iteration
     keyword_data = df.filter(pl.col('keyword') == keyword)
@@ -100,7 +198,10 @@ for keywords in df_new['keyword']:
             size=10,
             symbol='arrow'
         ),
-    ))
+    ))"""
+
+ranked_keys = plot_lines_markers_ranked(fig, df, unranked)
+#unranked_keys = list_unranked_keywords(ranked_keys, unranked, home_url_ranked)
 
 fig.update_yaxes(
     #autorange='reversed',   # set Y axis to descending order

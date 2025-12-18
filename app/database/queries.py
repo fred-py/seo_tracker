@@ -172,7 +172,7 @@ async def find_unranked_keywords(
 
             # Get all keyword IDs for where domain ranks
             ranked_keyword_ids = set()  # Using set(0 to avoid duplicates and faster lookup
-            for organic_rank, keyword, location_obj in ranked:
+            for keyword, location_obj in ranked:
                 ranked_keyword_ids.add(keyword.id)
 
             # Get all keywords for service + location combo
@@ -183,6 +183,7 @@ async def find_unranked_keywords(
                 .where(Location.location == location)
             )
             unranked = await session.exec(get_all_statement)
+
             # Find keywords where domain does not rank
             unranked_keys = []
             for keyword, location_obj in unranked:
@@ -193,6 +194,14 @@ async def find_unranked_keywords(
                         "keyword_id": keyword.id,
                     }
                     unranked_keys.append(d)
+            """
+            if unranked is None:
+                d = {
+                    "location": location,
+                    "keyword": "No keywords out of the top 10",
+                    "keyword_id": 000,
+                }
+                unranked_keys.append(d)"""
             return unranked_keys 
         except Exception as e:
             print(e)
