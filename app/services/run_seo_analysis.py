@@ -18,17 +18,26 @@ import pprint
 #'https://unitedpropertyservices.au/carpet-cleaning-busselton-margaret-river/'
 home_url_ranked, unranked = asyncio.run(
     fetch_ranked_and_unranked_data(
-        LocationEnum.mr,
+        LocationEnum.duns,
         ServiceEnum.carpet,
         'https://unitedpropertyservices.au/',
         #'https://unitedpropertyservices.au/carpet-cleaning-busselton-margaret-river/'
     ))
 
 pprint.pprint(home_url_ranked)
-
+pprint.pprint(unranked)
 
 ids = get_earliest_ids(home_url_ranked)
 recent = get_recently_ranked_keyword(home_url_ranked, ids)
+
+# https://plotly.com/python-api-reference/generated/plotly.express.line
+# NOTE: By default line charts are implemented in order they are provided
+# Sorting by date stops the lines jumping backwards on the chart.
+df = pl.DataFrame(home_url_ranked).sort(by='date')
+
+#df_unranked = check_unranked_keywords(unranked)
+
+df_new = pl.DataFrame(recent)
 
 
 def plot_lines_markers_ranked(fig, df, unranked):
@@ -49,10 +58,10 @@ def plot_lines_markers_ranked(fig, df, unranked):
             )
         ))
 
-    unranked_keys = pl.DataFrame(unranked)
+    unranked_df = pl.DataFrame(unranked)
     try:
-        for keyword in unranked_keys['keyword']:
-            keyword_data = df.filter(pl.col('keyword') == keyword)
+        for keyword in unranked_df['keyword']:
+            keyword_data = unranked_df.filter(pl.col('keyword') == keyword)
             fig.add_trace(go.Scatter(
                     x=keyword_data,
                     y=keyword_data['location'],
@@ -68,7 +77,7 @@ def plot_lines_markers_ranked(fig, df, unranked):
                 ))
     except ColumnNotFoundError:
         return None
-
+    
     return fig
 
 
@@ -129,15 +138,6 @@ def check_unranked_keywords(data):
 
 
 
-# https://plotly.com/python-api-reference/generated/plotly.express.line
-# NOTE: By default line charts are implemented in order they are provided
-# Sorting by date stops the lines jumping backwards on the chart.
-df = pl.DataFrame(home_url_ranked).sort(by='date')
-
-#df_unranked = check_unranked_keywords(unranked)
-
-#df_new = pl.DataFrame(recent)
-
 # NOTE: When scattermode is set to 'group' it will override
 # autorange and display 0 as min. value on yaxis 
 # To fix this, assign min and max rank position from df
@@ -150,7 +150,15 @@ location = df['location'][0]
 service = df['service'][0]
 
 fig = go.Figure()
-"""
+
+#ranked_keys = plot_lines_markers_ranked(fig, df, unranked)
+#unranked_keys = list_unranked_keywords(fig, unranked, home_url_ranked)
+df_unranked = pl.DataFrame(unranked)  # for loop outside function
+print(df_unranked)
+
+
+# NOTE: this block should come before fig.update_layout method **
+
 for keyword in df['keyword'].unique():  # Manually loop over unique keyword column - plotly express does this automatically
     # Filter data for specific keyword on each iteration
     keyword_data = df.filter(pl.col('keyword') == keyword)
@@ -198,10 +206,9 @@ for keywords in df_new['keyword']:
             size=10,
             symbol='arrow'
         ),
-    ))"""
+    ))
 
-ranked_keys = plot_lines_markers_ranked(fig, df, unranked)
-#unranked_keys = list_unranked_keywords(ranked_keys, unranked, home_url_ranked)
+
 
 fig.update_yaxes(
     #autorange='reversed',   # set Y axis to descending order
@@ -271,6 +278,5 @@ fig.update_layout(
     scattermode='group',
     scattergap=0.1,  
 )
-
 
 fig.show()

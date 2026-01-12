@@ -16,7 +16,7 @@ async def get_or_create_location(session, location_name: str) -> Location:
 
         Arg: session, location name
 
-        Usage: called from within save_organic_results() methof
+        Usage: called from within save_organic_results() method
 
         Output: returns an existing or new location object
     """
@@ -93,8 +93,7 @@ async def save_organic_results(
         data: List of search result dictionaries from SERP API
 
         service: takes ServiceEnum type
-            - 
-
+            -
     Usage:
         await save_organic_results(api_response_data)
 

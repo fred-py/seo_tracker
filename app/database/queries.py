@@ -169,11 +169,14 @@ async def find_unranked_keywords(
             )
 
             ranked = await session.exec(ranked_statement)
+            #ranked_list = ranked.all()  # Convert to list
 
             # Get all keyword IDs for where domain ranks
             ranked_keyword_ids = set()  # Using set(0 to avoid duplicates and faster lookup
-            for keyword, location_obj in ranked:
+            for organic, keyword, location_obj in ranked:
                 ranked_keyword_ids.add(keyword.id)
+
+            ranked_ids = list(ranked_keyword_ids)
 
             # Get all keywords for service + location combo
             get_all_statement = (
@@ -183,26 +186,19 @@ async def find_unranked_keywords(
                 .where(Location.location == location)
             )
             unranked = await session.exec(get_all_statement)
+            unranked_list = list(unranked)
 
             # Find keywords where domain does not rank
             unranked_keys = []
-            for keyword, location_obj in unranked:
-                if keyword.id not in ranked_keyword_ids:
+            for keyword, location_obj in unranked_list:
+                if keyword.id not in ranked_ids:
                     d = {
                         "location": location_obj.location,
                         "keyword": keyword.keywords,
                         "keyword_id": keyword.id,
                     }
                     unranked_keys.append(d)
-            """
-            if unranked is None:
-                d = {
-                    "location": location,
-                    "keyword": "No keywords out of the top 10",
-                    "keyword_id": 000,
-                }
-                unranked_keys.append(d)"""
-            return unranked_keys 
+            return unranked_keys
         except Exception as e:
             print(e)
 
@@ -249,7 +245,7 @@ async def run_all_queries():
         df_ranked = pl.DataFrame(ranked_results)
         df_ranked.write_csv("ranked_results.csv")
         print(f"✅ Saved {len(df_ranked)} ranked results to ranked_results.csv")
-    
+
     # Run second query
     unranked_results = await find_unranked_keywords(
         LocationEnum.duns,
@@ -273,17 +269,19 @@ def main():
     as a module
     """
 
-    asyncio.run(run_all_queries())
-
+    #asyncio.run(run_all_queries())
+    
 
 if __name__ == "__main__":
-    #main()
+    
     #'https://unitedpropertyservices.au/carpet-cleaning-busselton-margaret-river/'
-    data = asyncio.run(get_url_rank_by_service_location(
-        LocationEnum.bus,
-        ServiceEnum.tile_grout,
-        'https://unitedpropertyservices.au/carpet-cleaning-busselton-margaret-river/'
-        #'https://unitedpropertyservices.au/' 
-        ,)
-    )
-    pprint.pprint(data)
+    #data = asyncio.run(get_url_rank_by_service_location(
+    #    LocationEnum.duns,
+    #    ServiceEnum.carpet,
+        #'https://unitedpropertyservices.au/carpet-cleaning-busselton-margaret-river/'
+    #    'https://unitedpropertyservices.au/' 
+    #    ,)
+    #)
+    unranked = asyncio.run(find_unranked_keywords(LocationEnum.duns, ServiceEnum.carpet))
+    
+    pprint.pprint(unranked)
