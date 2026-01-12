@@ -35,35 +35,39 @@ recent = get_recently_ranked_keyword(home_url_ranked, ids)
 # Sorting by date stops the lines jumping backwards on the chart.
 df = pl.DataFrame(home_url_ranked).sort(by='date')
 
-#df_unranked = check_unranked_keywords(unranked)
+unranked_df = pl.DataFrame(unranked)
 
 df_new = pl.DataFrame(recent)
+print(df_new)
 
 
-def plot_lines_markers_ranked(fig, df, unranked):
-    # Manually loop over unique keyword column - plotly express does this automatically
-    for keyword in df['keyword'].unique():
-        # Filter data for specific keyword on each iteration
-        keyword_data = df.filter(pl.col('keyword') == keyword)
+def plot_lines_markers_ranked(fig, df, unranked_df, df_new):
 
-        fig.add_trace(go.Scatter(
-            x=keyword_data['date'],
-            y=keyword_data['position'],
-            mode='lines+markers',
-            name=keyword,
-            legend='legend',
-            showlegend=True,
-            marker=dict(
-                size=9
-            )
-        ))
+    try:
+        # Manually loop over unique keyword column - plotly express does this automatically
+        for keyword in df['keyword'].unique():
+            # Filter data for specific keyword on each iteration
+            keyword_data = df.filter(pl.col('keyword') == keyword)
 
-    unranked_df = pl.DataFrame(unranked)
+            fig.add_trace(go.Scatter(
+                x=keyword_data['date'],
+                y=keyword_data['position'],
+                mode='lines+markers',
+                name=keyword,
+                legend='legend',
+                showlegend=True,
+                marker=dict(
+                    size=9
+                )
+            ))
+    except Exception as e:
+        raise e
+
     try:
         for keyword in unranked_df['keyword']:
             keyword_data = unranked_df.filter(pl.col('keyword') == keyword)
             fig.add_trace(go.Scatter(
-                    x=keyword_data,
+                    x=keyword_data['keyword'],
                     y=keyword_data['location'],
                     mode='markers',
                     name=keyword,
@@ -76,66 +80,28 @@ def plot_lines_markers_ranked(fig, df, unranked):
                     ),
                 ))
     except ColumnNotFoundError:
-        return None
-    
-    return fig
+        print('No unranked keyword outside of top 10')
 
-
-def list_unranked_keywords(fig, unranked, ranked):
-    df = pl.DataFrame(unranked)
     try:
-        for keyword in df['keyword']:
-            keyword_data = ranked.filter(pl.col('keyword') == keyword)
+        for keywords in df_new['keyword']:
+            keyword_data = df_new.filter(pl.col('keyword') == keyword)
             fig.add_trace(go.Scatter(
-                    x=keyword_data,
-                    y=keyword_data['location'],
-                    mode='markers',
-                    name=keyword,
-                    legend='legend2',
-                    showlegend=True,
-                    marker=dict(
-                        color='red',
-                        size=8,
-                        symbol='x'
-                    ),
-                ))
-    except ColumnNotFoundError:
-        return None
-    return fig
-
-
-def plot_markers(data):
-    pass
-
-
-def check_unranked_keywords(data):
-    """"""
-    
-    try:
-        for keywords in df_unranked['keyword']:
-            keyword_data = df.filter(pl.col('keyword') == keyword)
-            fig.add_trace(go.Scatter(
-                x=keyword_data,
+                x=keyword_data['keyword'],
                 y=keyword_data['location'],
                 mode='markers',
                 name=keywords,
-                legend='legend2',
+                legend='legend3',
                 showlegend=True,
                 marker=dict(
-                    color='red',
-                    size=8,
-                    symbol='x'
+                    color='Green',
+                    size=10,
+                    symbol='arrow'
                 ),
             ))
-        df = pl.DataFrame(data)
-        print(df)
-    except ColumnNotFoundError:
-        df = {
-                "keyword": "All set keywords currently rank in the top 10"
-            }
-        return df
-    return df
-
+    except Exception as e:
+        raise e
+    
+    return fig
 
 
 # NOTE: When scattermode is set to 'group' it will override
@@ -151,10 +117,9 @@ service = df['service'][0]
 
 fig = go.Figure()
 
-#ranked_keys = plot_lines_markers_ranked(fig, df, unranked)
-#unranked_keys = list_unranked_keywords(fig, unranked, home_url_ranked)
+#ranked_keys = plot_lines_markers_ranked(fig, df, unranked_df, df_new)
 df_unranked = pl.DataFrame(unranked)  # for loop outside function
-print(df_unranked)
+
 
 
 # NOTE: this block should come before fig.update_layout method **
@@ -207,7 +172,6 @@ for keywords in df_new['keyword']:
             symbol='arrow'
         ),
     ))
-
 
 
 fig.update_yaxes(
