@@ -18,8 +18,8 @@ import pprint
 #'https://unitedpropertyservices.au/carpet-cleaning-busselton-margaret-river/'
 home_url_ranked, unranked = asyncio.run(
     fetch_ranked_and_unranked_data(
-        LocationEnum.duns,
-        ServiceEnum.carpet,
+        LocationEnum.mr,
+        ServiceEnum.tile_grout,
         'https://unitedpropertyservices.au/',
         #'https://unitedpropertyservices.au/carpet-cleaning-busselton-margaret-river/'
     ))
@@ -175,38 +175,39 @@ for keyword in df['keyword'].unique():  # Manually loop over unique keyword colu
         )
     ))
 
-for keywords in df_unranked['keyword']:
-    keyword_data = df.filter(pl.col('keyword') == keyword)
-    fig.add_trace(go.Scatter(
-        x=keyword_data,
-        y=keyword_data['location'],
-        mode='markers',
-        name=keywords,
-        legend='legend2',
-        showlegend=True,
-        marker=dict(
-            color='red',
-            size=8,
-            symbol='x'
-        ),
-    ))
+if unranked:  # Check unranked obj instead of dataframe as empty df can be ambiguous
+    for keywords in df_unranked['keyword']:
+        keyword_data = df.filter(pl.col('keyword') == keyword)
+        fig.add_trace(go.Scatter(
+            x=keyword_data,
+            y=keyword_data['location'],
+            mode='markers',
+            name=keywords,
+            legend='legend2',
+            showlegend=True,
+            marker=dict(
+                color='red',
+                size=8,
+                symbol='x'
+            ),
+        ))
 
-
-for keywords in df_new['keyword']:
-    keyword_data = df.filter(pl.col('keyword') == keyword)
-    fig.add_trace(go.Scatter(
-        x=keyword_data,
-        y=keyword_data['location'],
-        mode='markers',
-        name=keywords,
-        legend='legend3',
-        showlegend=True,
-        marker=dict(
-            color='Green',
-            size=10,
-            symbol='arrow'
-        ),
-    ))
+if recent:
+    for keywords in df_new['keyword']:
+        keyword_data = df.filter(pl.col('keyword') == keyword)
+        fig.add_trace(go.Scatter(
+            x=keyword_data,
+            y=keyword_data['location'],
+            mode='markers',
+            name=keywords,
+            legend='legend3',
+            showlegend=True,
+            marker=dict(
+                color='Green',
+                size=10,
+                symbol='arrow'
+            ),
+        ))
 
 
 
