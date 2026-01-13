@@ -75,11 +75,12 @@ def get_recently_ranked_keyword(data, ids: set):
     # NOTE: Polars DataFrame Constructor cannot
     # be called with type 'set'
     # Create list of dictionary from
-    # newly_rank set into to be
+    # newly_rank set to be
     # converted into a polars DataFrame
     for key in newly_ranked:
         n = {
-            'keyword': key
+            'keyword': key,
+            'location': d['location']
         }
         new.append(n)
 

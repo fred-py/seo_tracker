@@ -24,8 +24,6 @@ home_url_ranked, unranked = asyncio.run(
         #'https://unitedpropertyservices.au/carpet-cleaning-busselton-margaret-river/'
     ))
 
-pprint.pprint(home_url_ranked)
-pprint.pprint(unranked)
 
 ids = get_earliest_ids(home_url_ranked)
 recent = get_recently_ranked_keyword(home_url_ranked, ids)
@@ -35,40 +33,64 @@ recent = get_recently_ranked_keyword(home_url_ranked, ids)
 # Sorting by date stops the lines jumping backwards on the chart.
 df = pl.DataFrame(home_url_ranked).sort(by='date')
 
-#df_unranked = check_unranked_keywords(unranked)
+unranked_df = pl.DataFrame(unranked)
 
 df_new = pl.DataFrame(recent)
 
 
-def plot_lines_markers_ranked(fig, df, unranked):
-    # Manually loop over unique keyword column - plotly express does this automatically
-    for keyword in df['keyword'].unique():
-        # Filter data for specific keyword on each iteration
-        keyword_data = df.filter(pl.col('keyword') == keyword)
+def plot_lines_markers_ranked(fig, df, unranked_df, df_new) -> go.Figure:
+    """
+        This function plots data from rankend keywords data
+        including recenlty ranked. It displays 3 legends
+        highlighting ranked, unranked and recently ranked
+        keywords.
 
-        fig.add_trace(go.Scatter(
-            x=keyword_data['date'],
-            y=keyword_data['position'],
-            mode='lines+markers',
-            name=keyword,
-            legend='legend',
-            showlegend=True,
-            marker=dict(
-                size=9
-            )
-        ))
+        args:
+            1. fig - plotly figure object
+            2. df refers to ranked data object
+            3. unranked_df data object
+            4. df_new refers to data output from
+            get_recently_ranked_keyword method
 
-    unranked_df = pl.DataFrame(unranked)
+        output:
+            Returns an modified plotlly fig obj
+    """
+    try:
+        # Manually loop over unique keyword column - plotly express does this automatically
+        for keyword in df['keyword'].unique():
+            # Filter data for specific keyword on each iteration
+            keyword_data = df.filter(pl.col('keyword') == keyword)
+
+            fig.add_trace(go.Scatter(
+                x=keyword_data['date'],
+                y=keyword_data['position'],
+                mode='lines+markers',
+                name=keyword,
+                legend='legend',
+                showlegend=True,
+                marker=dict(
+                    size=9
+                )
+            ))
+    except Exception as e:
+        raise e
+
     try:
         for keyword in unranked_df['keyword']:
             keyword_data = unranked_df.filter(pl.col('keyword') == keyword)
             fig.add_trace(go.Scatter(
-                    x=keyword_data,
-                    y=keyword_data['location'],
+                    # NOTE: x and y axis need valid values to work
+                    # Will not work if both axis have string value
+                    # However this is intended to display legend values only
+                    # Nothing to be displayed on axis
+                    # Hence using min. date from df and random int on y
+                    x=[df['date'].min()],
+                    y=[11],
                     mode='markers',
                     name=keyword,
                     legend='legend2',
                     showlegend=True,
+
                     marker=dict(
                         color='red',
                         size=8,
@@ -76,66 +98,32 @@ def plot_lines_markers_ranked(fig, df, unranked):
                     ),
                 ))
     except ColumnNotFoundError:
-        return None
-    
-    return fig
+        print('No unranked keyword outside of top 10')
 
-
-def list_unranked_keywords(fig, unranked, ranked):
-    df = pl.DataFrame(unranked)
     try:
-        for keyword in df['keyword']:
-            keyword_data = ranked.filter(pl.col('keyword') == keyword)
+        for keywords in df_new['keyword']:
+            keyword_data = df_new.filter(pl.col('keyword') == keyword)
             fig.add_trace(go.Scatter(
-                    x=keyword_data,
-                    y=keyword_data['location'],
-                    mode='markers',
-                    name=keyword,
-                    legend='legend2',
-                    showlegend=True,
-                    marker=dict(
-                        color='red',
-                        size=8,
-                        symbol='x'
-                    ),
-                ))
-    except ColumnNotFoundError:
-        return None
-    return fig
-
-
-def plot_markers(data):
-    pass
-
-
-def check_unranked_keywords(data):
-    """"""
-    
-    try:
-        for keywords in df_unranked['keyword']:
-            keyword_data = df.filter(pl.col('keyword') == keyword)
-            fig.add_trace(go.Scatter(
-                x=keyword_data,
-                y=keyword_data['location'],
+                # NOTE: x and y axis need valid values to work
+                # Will not work if both axis have string value
+                # However this is intended to display legend values only
+                # Nothing to be displayed on axis
+                # Hence using min. date from df and random int on y
+                x=[df['date'].min()],
+                y=[11],
                 mode='markers',
                 name=keywords,
-                legend='legend2',
+                legend='legend3',
                 showlegend=True,
                 marker=dict(
-                    color='red',
-                    size=8,
-                    symbol='x'
+                    color='Green',
+                    size=10,
+                    symbol='arrow'
                 ),
             ))
-        df = pl.DataFrame(data)
-        print(df)
-    except ColumnNotFoundError:
-        df = {
-                "keyword": "All set keywords currently rank in the top 10"
-            }
-        return df
-    return df
-
+    except Exception as e:
+        raise e
+    return fig
 
 
 # NOTE: When scattermode is set to 'group' it will override
@@ -175,39 +163,38 @@ for keyword in df['keyword'].unique():  # Manually loop over unique keyword colu
         )
     ))
 
-if unranked:  # Check unranked obj instead of dataframe as empty df can be ambiguous
-    for keywords in df_unranked['keyword']:
-        keyword_data = df.filter(pl.col('keyword') == keyword)
-        fig.add_trace(go.Scatter(
-            x=keyword_data,
-            y=keyword_data['location'],
-            mode='markers',
-            name=keywords,
-            legend='legend2',
-            showlegend=True,
-            marker=dict(
-                color='red',
-                size=8,
-                symbol='x'
-            ),
-        ))
+for keywords in df_unranked['keyword']:
+    keyword_data = df.filter(pl.col('keyword') == keyword)
+    fig.add_trace(go.Scatter(
+        x=keyword_data,
+        y=keyword_data['location'],
+        mode='markers',
+        name=keywords,
+        legend='legend2',
+        showlegend=True,
+        marker=dict(
+            color='red',
+            size=8,
+            symbol='x'
+        ),
+    ))
 
-if recent:
-    for keywords in df_new['keyword']:
-        keyword_data = df.filter(pl.col('keyword') == keyword)
-        fig.add_trace(go.Scatter(
-            x=keyword_data,
-            y=keyword_data['location'],
-            mode='markers',
-            name=keywords,
-            legend='legend3',
-            showlegend=True,
-            marker=dict(
-                color='Green',
-                size=10,
-                symbol='arrow'
-            ),
-        ))
+
+for keywords in df_new['keyword']:
+    keyword_data = df.filter(pl.col('keyword') == keyword)
+    fig.add_trace(go.Scatter(
+        x=keyword_data,
+        y=keyword_data['location'],
+        mode='markers',
+        name=keywords,
+        legend='legend3',
+        showlegend=True,
+        marker=dict(
+            color='Green',
+            size=10,
+            symbol='arrow'
+        ),
+    ))
 
 
 
