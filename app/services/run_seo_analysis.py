@@ -18,14 +18,12 @@ import pprint
 #'https://unitedpropertyservices.au/carpet-cleaning-busselton-margaret-river/'
 home_url_ranked, unranked = asyncio.run(
     fetch_ranked_and_unranked_data(
-        LocationEnum.duns,
+        LocationEnum.bus,
         ServiceEnum.carpet,
         'https://unitedpropertyservices.au/',
         #'https://unitedpropertyservices.au/carpet-cleaning-busselton-margaret-river/'
     ))
 
-pprint.pprint(home_url_ranked)
-pprint.pprint(unranked)
 
 ids = get_earliest_ids(home_url_ranked)
 recent = get_recently_ranked_keyword(home_url_ranked, ids)
@@ -38,11 +36,25 @@ df = pl.DataFrame(home_url_ranked).sort(by='date')
 unranked_df = pl.DataFrame(unranked)
 
 df_new = pl.DataFrame(recent)
-print(df_new)
 
 
-def plot_lines_markers_ranked(fig, df, unranked_df, df_new):
+def plot_lines_markers_ranked(fig, df, unranked_df, df_new) -> go.Figure:
+    """
+        This function plots data from rankend keywords data
+        including recenlty ranked. It displays 3 legends
+        highlighting ranked, unranked and recently ranked
+        keywords.
 
+        args:
+            1. fig - plotly figure object
+            2. df refers to ranked data object
+            3. unranked_df data object
+            4. df_new refers to data output from
+            get_recently_ranked_keyword method
+
+        output:
+            Returns an modified plotlly fig obj
+    """
     try:
         # Manually loop over unique keyword column - plotly express does this automatically
         for keyword in df['keyword'].unique():
@@ -67,12 +79,18 @@ def plot_lines_markers_ranked(fig, df, unranked_df, df_new):
         for keyword in unranked_df['keyword']:
             keyword_data = unranked_df.filter(pl.col('keyword') == keyword)
             fig.add_trace(go.Scatter(
-                    x=keyword_data['keyword'],
-                    y=keyword_data['location'],
+                    # NOTE: x and y axis need valid values to work
+                    # Will not work if both axis have string value
+                    # However this is intended to display legend values only
+                    # Nothing to be displayed on axis
+                    # Hence using min. date from df and random int on y
+                    x=[df['date'].min()],
+                    y=[11],
                     mode='markers',
                     name=keyword,
                     legend='legend2',
                     showlegend=True,
+
                     marker=dict(
                         color='red',
                         size=8,
@@ -86,8 +104,13 @@ def plot_lines_markers_ranked(fig, df, unranked_df, df_new):
         for keywords in df_new['keyword']:
             keyword_data = df_new.filter(pl.col('keyword') == keyword)
             fig.add_trace(go.Scatter(
-                x=keyword_data['keyword'],
-                y=keyword_data['location'],
+                # NOTE: x and y axis need valid values to work
+                # Will not work if both axis have string value
+                # However this is intended to display legend values only
+                # Nothing to be displayed on axis
+                # Hence using min. date from df and random int on y
+                x=[df['date'].min()],
+                y=[11],
                 mode='markers',
                 name=keywords,
                 legend='legend3',
@@ -100,7 +123,6 @@ def plot_lines_markers_ranked(fig, df, unranked_df, df_new):
             ))
     except Exception as e:
         raise e
-    
     return fig
 
 
@@ -117,62 +139,7 @@ service = df['service'][0]
 
 fig = go.Figure()
 
-#ranked_keys = plot_lines_markers_ranked(fig, df, unranked_df, df_new)
-df_unranked = pl.DataFrame(unranked)  # for loop outside function
-
-
-
-# NOTE: this block should come before fig.update_layout method **
-
-for keyword in df['keyword'].unique():  # Manually loop over unique keyword column - plotly express does this automatically
-    # Filter data for specific keyword on each iteration
-    keyword_data = df.filter(pl.col('keyword') == keyword)
- 
-    fig.add_trace(go.Scatter(
-        x=keyword_data['date'],
-        y=keyword_data['position'],
-        mode='lines+markers',
-        name=keyword,
-        legend='legend',
-        showlegend=True,
-        marker=dict(
-            size=9
-        )
-    ))
-
-for keywords in df_unranked['keyword']:
-    keyword_data = df.filter(pl.col('keyword') == keyword)
-    fig.add_trace(go.Scatter(
-        x=keyword_data,
-        y=keyword_data['location'],
-        mode='markers',
-        name=keywords,
-        legend='legend2',
-        showlegend=True,
-        marker=dict(
-            color='red',
-            size=8,
-            symbol='x'
-        ),
-    ))
-
-
-for keywords in df_new['keyword']:
-    keyword_data = df.filter(pl.col('keyword') == keyword)
-    fig.add_trace(go.Scatter(
-        x=keyword_data,
-        y=keyword_data['location'],
-        mode='markers',
-        name=keywords,
-        legend='legend3',
-        showlegend=True,
-        marker=dict(
-            color='Green',
-            size=10,
-            symbol='arrow'
-        ),
-    ))
-
+fig = plot_lines_markers_ranked(fig, df, unranked_df, df_new)
 
 fig.update_yaxes(
     #autorange='reversed',   # set Y axis to descending order

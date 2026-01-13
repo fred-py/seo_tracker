@@ -12,3 +12,25 @@ run serp_api.py
 From root:
 $ python -m backend.app.providers.serp_api
 
+# CHALLENGES 
+y and x values on legends throwing off the display of the legends inside function.. expanp....
+for keywords in df_new['keyword']:
+            keyword_data = df_new.filter(pl.col('keyword') == keyword)
+            fig.add_trace(go.Scatter(
+                # NOTE: x and y axis need valid values to work
+                # Will not work if both axis have string value
+                # However this is intended to display legend values only
+                # Nothing to be displayed on axis
+                # Hence using min. date from df and random int on y
+                x=[df['date'].min()],  --- HERE
+                y=[11],
+                mode='markers',
+                name=keywords,
+                legend='legend3',
+                showlegend=True,
+                marker=dict(
+                    color='Green',
+                    size=10,
+                    symbol='arrow'
+                ),
+            ))
