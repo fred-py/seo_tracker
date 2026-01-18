@@ -173,10 +173,18 @@ async def find_unranked_keywords(
 
             # Get all keyword IDs for where domain ranks
             ranked_keyword_ids = set()  # Using set(0 to avoid duplicates and faster lookup
-            for organic, keyword, location_obj in ranked:
-                ranked_keyword_ids.add(keyword.id)
-
-            ranked_ids = list(ranked_keyword_ids)
+            dates = []
+            
+            try:
+                for organic, keyword, location_obj in ranked:
+                    ranked_keyword_ids.add(keyword.id)
+                    dates.append(organic.checked_date)
+                
+                ranked_ids = list(ranked_keyword_ids)
+                latest_date = max(dates)
+            
+            except Exception as e:
+                raise e
 
             # Get all keywords for service + location combo
             get_all_statement = (
@@ -198,7 +206,20 @@ async def find_unranked_keywords(
                         "keyword_id": keyword.id,
                     }
                     unranked_keys.append(d)
+                # NOTE NOTE NOTE NOTE
+                #>>>> additinal if statemetn added needs more work!!!
+                #>>>> refer to additional code above related to loop below
+                #>>>> run the code and you wll see douple up under unranked keywords...K
+                if organic.checked_date == latest_date:
+                    d = {
+                        "location": location_obj.location,
+                        "keyword": keyword.keywords,
+                        "keyword_id": keyword.id,
+                    }
+                    unranked_keys.append(d)
             return unranked_keys
+
+
         except Exception as e:
             print(e)
 
