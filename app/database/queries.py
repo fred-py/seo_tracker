@@ -203,6 +203,23 @@ async def find_unranked_keywords(
             print(e)
 
 
+async def fetch_ranked_and_unranked_data(location_enum, service_enum, url):
+    """Fetches all data concurrently"""
+    ranked, unranked = await asyncio.gather(
+        get_url_rank_by_service_location(
+            location_enum,
+            service_enum,
+            url
+        ),
+        find_unranked_keywords(
+            location_enum,
+            service_enum,
+            url
+        ),
+    )
+    return ranked, unranked
+
+
 async def add_or_update_service():
     async with async_session() as session:
         statement = (
@@ -227,6 +244,9 @@ async def check_key_words():
             print(keys)
 
 
+
+
+# TESTING
 async def run_all_queries():
     """Run all queries in a single event loop"""
     

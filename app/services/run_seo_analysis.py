@@ -5,26 +5,30 @@ Plotly graph objects enables more customisation
 import polars as pl
 from polars.exceptions import ColumnNotFoundError
 
-from backend.app.services.seo_logic import fetch_ranked_and_unranked_data, get_earliest_ids, \
+from backend.app.services.seo_logic import get_earliest_ids, \
     get_recently_ranked_keyword
+
+from backend.app.database.queries import fetch_ranked_and_unranked_data
 
 from backend.app.models import LocationEnum, ServiceEnum
 import asyncio
 import plotly.graph_objects as go
 import pprint
 
+from datetime import datetime
 
 
 #'https://unitedpropertyservices.au/carpet-cleaning-busselton-margaret-river/'
 home_url_ranked, unranked = asyncio.run(
     fetch_ranked_and_unranked_data(
-        LocationEnum.mr,
-        ServiceEnum.tile_grout,
+        LocationEnum.duns,
+        ServiceEnum.carpet,
         'https://unitedpropertyservices.au/',
         #'https://unitedpropertyservices.au/carpet-cleaning-busselton-margaret-river/'
     ))
 
 
+pprint.pprint(home_url_ranked)
 ids = get_earliest_ids(home_url_ranked)
 recent = get_recently_ranked_keyword(home_url_ranked, ids)
 
@@ -40,7 +44,7 @@ df_new = pl.DataFrame(recent)
 
 def plot_lines_markers_ranked(fig, df, unranked_df, df_new) -> go.Figure:
     """
-        This function plots data from rankend keywords data
+        This function plots data from rankand keywords data
         including recenlty ranked. It displays 3 legends
         highlighting ranked, unranked and recently ranked
         keywords.
@@ -56,11 +60,11 @@ def plot_lines_markers_ranked(fig, df, unranked_df, df_new) -> go.Figure:
             Returns an modified plotlly fig obj
     """
     try:
+        
         # Manually loop over unique keyword column - plotly express does this automatically
         for keyword in df['keyword'].unique():
             # Filter data for specific keyword on each iteration
             keyword_data = df.filter(pl.col('keyword') == keyword)
-
             fig.add_trace(go.Scatter(
                 x=keyword_data['date'],
                 y=keyword_data['position'],
@@ -74,6 +78,37 @@ def plot_lines_markers_ranked(fig, df, unranked_df, df_new) -> go.Figure:
             ))
     except Exception as e:
         raise e
+    """
+    try:
+        latest_date = df['date'].max()
+        for keyword in df['keyword'].unique():
+            # Filter data for specific keyword on each iteration
+            keyword_data = df.filter(
+                (pl.col('keyword') == keyword) &
+                (pl.col('date') == latest_date)
+            )
+
+            if len(keyword_data) > 0:
+                fig.add_trace(go.Scatter(
+                    # NOTE: x and y axis need valid values to work
+                    # Will not work if both axis have string value
+                    # However this is intended to display legend values only
+                    # Nothing to be displayed on axis
+                    # Hence using min. date from df and random int on y
+                    x=[df['date'].min()],
+                    y=[11],
+                    mode='markers',
+                    name=keyword,
+                    legend='legend1',
+                    showlegend=True,
+                    marker=dict(
+                        size=9
+                    )
+                ))
+
+    except Exception as e:
+        raise e
+"""
 
     try:
         for keyword in unranked_df['keyword']:
@@ -160,12 +195,22 @@ def update_fig_layout(fig: go.Figure) -> go.Figure:
 
             legend=dict(
                 title=dict(
-                    text='Ranked Keywords',
+                    text='All Time Ranked Keywords',
                 ),
                 y=0.99,
                 x=1.02,
                 xanchor='left',
             ),
+
+            legend1=dict(
+                title=dict(
+                    text='All Time Ranked Keywords',
+                ),
+                y=0.99,
+                x=1.02,
+                xanchor='left',
+            ),
+            
             legend2=dict(
                 title=dict(
                     text='Unranked Keywords',
@@ -180,7 +225,7 @@ def update_fig_layout(fig: go.Figure) -> go.Figure:
                     text='Recently Ranked Keywords',
                     
                 ),
-                y=0.1,
+                y=0.07,
                 x=1.02,
                 xanchor='left',
             ),

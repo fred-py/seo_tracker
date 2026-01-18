@@ -1,23 +1,10 @@
-from backend.app.database.queries import get_url_rank_by_service_location, \
-    get_domain_rank_by_service_location, find_unranked_keywords
-import asyncio
 
+def check_latest_ranked_keywords(list) -> list:
+    # NOTE: **** NOT IN USE!!!
+    for date in list:
+        latest = max(date.date)
+        print(latest)
 
-async def fetch_ranked_and_unranked_data(location_enum, service_enum, url):
-    """Fetches all data concurrently"""
-    ranked, unranked = await asyncio.gather(
-        get_url_rank_by_service_location(
-            location_enum,
-            service_enum,
-            url
-        ),
-        find_unranked_keywords(
-            location_enum,
-            service_enum,
-            url
-        ),
-    )
-    return ranked, unranked
 
 
 def get_earliest_ids(data) -> set:
@@ -85,3 +72,5 @@ def get_recently_ranked_keyword(data, ids: set):
         new.append(n)
 
     return new
+
+
