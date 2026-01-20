@@ -169,22 +169,33 @@ async def find_unranked_keywords(
             )
 
             ranked = await session.exec(ranked_statement)
-            #ranked_list = ranked.all()  # Convert to list
-
             # Get all keyword IDs for where domain ranks
             ranked_keyword_ids = set()  # Using set(0 to avoid duplicates and faster lookup
+            # NOTE: all_time obj refers to keywords that have ranked an any
+            # given point, however may no longer rank in the top 10.
+            all_time = []
             dates = []
-            
             try:
                 for organic, keyword, location_obj in ranked:
                     ranked_keyword_ids.add(keyword.id)
-                    dates.append(organic.checked_date)
-                
+                    b = {
+                        "location": location_obj.location,
+                        "keyword": keyword.keywords,
+                        "position": organic.position,
+                        "checked_date": organic.checked_date,
+                        "keyword_id": keyword.id,
+                    }
+                    all_time.append(b)
+
+                    checked_date = organic.checked_date
+                    if checked_date not in dates:
+                        dates.append(checked_date)
+
                 ranked_ids = list(ranked_keyword_ids)
-                latest_date = max(dates)
-            
+                
             except Exception as e:
                 raise e
+            
 
             # Get all keywords for service + location combo
             get_all_statement = (
@@ -206,19 +217,30 @@ async def find_unranked_keywords(
                         "keyword_id": keyword.id,
                     }
                     unranked_keys.append(d)
-                # NOTE NOTE NOTE NOTE
-                #>>>> additinal if statemetn added needs more work!!!
-                #>>>> refer to additional code above related to loop below
-                #>>>> run the code and you wll see douple up under unranked keywords...K
-                if organic.checked_date == latest_date:
-                    d = {
-                        "location": location_obj.location,
-                        "keyword": keyword.keywords,
-                        "keyword_id": keyword.id,
-                    }
-                    unranked_keys.append(d)
-            return unranked_keys
+            latest_date = max(dates)
+            
+            
+            # NOTE NOTE NOTE:
+            # We are almost there, work on the loop below
+            # We need to append keywords in all_time 
+            # that have dropped out of the top 10
+            # The trick is that using the logfic below
+            # all keywords will have an instance of not 
+            # having the latest date and therefore will still be listed as unranked 
+            # even if they rank in latest.
 
+
+            
+            for keyword in all_time:
+                date = keyword['checked_date']
+                keys = keyword['keyword']
+                if date < latest_date:
+                    
+                    print(keys)
+                    print(latest_date)
+
+
+            return unranked_keys
 
         except Exception as e:
             print(e)
