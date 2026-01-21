@@ -19,7 +19,7 @@ from datetime import datetime
 
 
 #'https://unitedpropertyservices.au/carpet-cleaning-busselton-margaret-river/'
-home_url_ranked, unranked = asyncio.run(
+home_url_ranked, unranked, dropped = asyncio.run(
     fetch_ranked_and_unranked_data(
         LocationEnum.duns,
         ServiceEnum.carpet,

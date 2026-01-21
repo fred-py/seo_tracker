@@ -6,7 +6,6 @@ def check_latest_ranked_keywords(list) -> list:
         print(latest)
 
 
-
 def get_earliest_ids(data) -> set:
     """
     Retrieve the keyword.id from
@@ -72,5 +71,3 @@ def get_recently_ranked_keyword(data, ids: set):
         new.append(n)
 
     return new
-
-

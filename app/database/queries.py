@@ -147,13 +147,14 @@ async def get_domain_rank_by_service_location(
             print(e)
 
 
-async def find_unranked_keywords(
+async def find_never_ranked_keywords(
         location: LocationEnum,
         service: ServiceEnum,
         link=None,
         ) -> Keyword:
     """Find keywords if any where a url
-    does not rank in the top 10 results"""
+    does not rank in the top 10 results
+    """
     if link is None:
         link = "https://unitedpropertyservices.au/"  # Defaults to united domain
 
@@ -178,6 +179,7 @@ async def find_unranked_keywords(
             try:
                 for organic, keyword, location_obj in ranked:
                     ranked_keyword_ids.add(keyword.id)
+
                     b = {
                         "location": location_obj.location,
                         "keyword": keyword.keywords,
@@ -192,7 +194,7 @@ async def find_unranked_keywords(
                         dates.append(checked_date)
 
                 ranked_ids = list(ranked_keyword_ids)
-                
+
             except Exception as e:
                 raise e
             
@@ -218,9 +220,8 @@ async def find_unranked_keywords(
                     }
                     unranked_keys.append(d)
             latest_date = max(dates)
-            
-            
-            # NOTE NOTE NOTE:
+
+            """# NOTE NOTE NOTE:
             # We are almost there, work on the loop below
             # We need to append keywords in all_time 
             # that have dropped out of the top 10
@@ -228,39 +229,132 @@ async def find_unranked_keywords(
             # all keywords will have an instance of not 
             # having the latest date and therefore will still be listed as unranked 
             # even if they rank in latest.
-
-
-            
+            #pprint.pprint(all_time)
             for keyword in all_time:
                 date = keyword['checked_date']
+                keyword_id = keyword['keyword_id']
                 keys = keyword['keyword']
-                if date < latest_date:
-                    
-                    print(keys)
-                    print(latest_date)
 
-
+                if keyword_id in ranked_keyword_ids and date > latest_date:
+                    print(keys)"""
             return unranked_keys
 
         except Exception as e:
-            print(e)
+            print(f'yeah nah something is wrong around line 240 in queries.py {e}')
+            raise e
+
+        
+async def find_dropped_keywords(
+        location: LocationEnum,
+        service: ServiceEnum,
+        link=None,
+        ) -> Keyword:
+
+    """Find keywords that dropped
+    out of the top 10 rank"""
+    if link is None:
+        link = "https://unitedpropertyservices.au/"  # Defaults to united domain
+
+    async with async_session() as session:
+        try:
+            ranked_statement = (
+                select(OrganicRank, Keyword, Location)
+                .join(Keyword, OrganicRank.keyword_id == Keyword.id)
+                .join(Location, Keyword.location_id == Location.id)
+                .where(Keyword.service == service)
+                .where(Location.location == location)
+                .where(OrganicRank.link == link)
+            )
+
+            ranked = await session.exec(ranked_statement)
+            # Get all keyword IDs for where domain ranks
+            ranked_keyword_ids = set()  # Using set(0 to avoid duplicates and faster lookup
+            latest_ranked_keyword_ids = set()
+            # NOTE: all_time obj refers to keywords that have ranked an any
+            # given point, however may no longer rank in the top 10.
+            all_time = []
+            dates = []
+            dates_previous = []
+            
+            for organic, keyword, location_obj in ranked:
+                ranked_keyword_ids.add(keyword.id)
+                checked_date = organic.checked_date
+                
+                b = {
+                        "location": location_obj.location,
+                        "keyword": keyword.keywords,
+                        "position": organic.position,
+                        "checked_date": organic.checked_date,
+                        "keyword_id": keyword.id,
+                    }
+                all_time.append(b)
+                
+                if checked_date not in dates:
+                    dates.append(checked_date)
+            
+            latest_date = max(dates)
+            for k in all_time:
+                if k['checked_date'] == latest_date:
+                    latest_ranked_keyword_ids.add(k['keyword_id'])
+            for i in ranked_keyword_ids:
+                if i not in latest_ranked_keyword_ids:
+                    print(i)
+            
+
+
+            #pprint.pprint(all_time)
+            #for d in all_time:
+                """if d['keyword'] == 'carpet cleaning':
+                    print(d['position'])
+                    print(d['checked_date'])
+                    print(d['keyword_id'])
+                """
+            #    if d['checked_date'] < latest_date:
+                    #print(date['position'])
+             #       x = {
+             #           "location": location_obj.location,
+             #          "keyword": keyword.keywords,
+             #           "position": organic.position,
+             #           "checked_date": organic.checked_date,
+             #           "keyword_id": keyword.id,
+             #       }
+             #       dates_previous.append(x)
+            
+            #for key in dates_previous:
+            #    if key['keyword'] not in all_time['keyword'] and key['date'] :
+            #       print(key['keyword'])
+            #print(dates_previous)
+
+            #ranked_ids = list(ranked_keyword_ids)
+
+            
+
+        
+        except Exception as e:
+            print(f'something wrong in find_dropped_keywords in queries.py {e}')
+            raise e
 
 
 async def fetch_ranked_and_unranked_data(location_enum, service_enum, url):
     """Fetches all data concurrently"""
-    ranked, unranked = await asyncio.gather(
+    ranked, unranked, dropped = await asyncio.gather(
         get_url_rank_by_service_location(
             location_enum,
             service_enum,
             url
         ),
-        find_unranked_keywords(
+        find_never_ranked_keywords(
             location_enum,
             service_enum,
             url
         ),
+        find_dropped_keywords(
+            location_enum,
+            service_enum,
+            url
+        )
     )
-    return ranked, unranked
+    return ranked, unranked, dropped
 
 
 async def add_or_update_service():
