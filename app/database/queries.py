@@ -274,7 +274,7 @@ async def find_dropped_keywords(
             # given point, however may no longer rank in the top 10.
             all_time = []
             dates = []
-            dates_previous = []
+            dropped = []
             
             for organic, keyword, location_obj in ranked:
                 ranked_keyword_ids.add(keyword.id)
@@ -288,48 +288,27 @@ async def find_dropped_keywords(
                         "keyword_id": keyword.id,
                     }
                 all_time.append(b)
-                
+               
                 if checked_date not in dates:
                     dates.append(checked_date)
-            
+           
             latest_date = max(dates)
+
             for k in all_time:
                 if k['checked_date'] == latest_date:
                     latest_ranked_keyword_ids.add(k['keyword_id'])
             for i in ranked_keyword_ids:
                 if i not in latest_ranked_keyword_ids:
-                    print(i)
+                    k_id = i
+                
+            for x in all_time:
+                if x['keyword_id'] == k_id:
+                    keyword = x['keyword']
+                    if keyword not in dropped:
+                        dropped.append(x['keyword'])
+            print(dropped)
+            return dropped
             
-
-
-            #pprint.pprint(all_time)
-            #for d in all_time:
-                """if d['keyword'] == 'carpet cleaning':
-                    print(d['position'])
-                    print(d['checked_date'])
-                    print(d['keyword_id'])
-                """
-            #    if d['checked_date'] < latest_date:
-                    #print(date['position'])
-             #       x = {
-             #           "location": location_obj.location,
-             #          "keyword": keyword.keywords,
-             #           "position": organic.position,
-             #           "checked_date": organic.checked_date,
-             #           "keyword_id": keyword.id,
-             #       }
-             #       dates_previous.append(x)
-            
-            #for key in dates_previous:
-            #    if key['keyword'] not in all_time['keyword'] and key['date'] :
-            #       print(key['keyword'])
-            #print(dates_previous)
-
-            #ranked_ids = list(ranked_keyword_ids)
-
-            
-
-        
         except Exception as e:
             print(f'something wrong in find_dropped_keywords in queries.py {e}')
             raise e
