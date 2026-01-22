@@ -151,9 +151,13 @@ async def find_never_ranked_keywords(
         location: LocationEnum,
         service: ServiceEnum,
         link=None,
-        ) -> Keyword:
-    """Find keywords if any where a url
-    does not rank in the top 10 results
+        ) -> list:
+    """Find keywords if any, where a url
+    has never ranked in the top 10 results
+
+    Arg: LocationEnum, ServiceEnum and link/url (optional)
+
+    Output: list of dictionaries
     """
     if link is None:
         link = "https://unitedpropertyservices.au/"  # Defaults to united domain
@@ -174,30 +178,14 @@ async def find_never_ranked_keywords(
             ranked_keyword_ids = set()  # Using set(0 to avoid duplicates and faster lookup
             # NOTE: all_time obj refers to keywords that have ranked an any
             # given point, however may no longer rank in the top 10.
-            all_time = []
-            dates = []
             try:
                 for organic, keyword, location_obj in ranked:
                     ranked_keyword_ids.add(keyword.id)
-
-                    b = {
-                        "location": location_obj.location,
-                        "keyword": keyword.keywords,
-                        "position": organic.position,
-                        "checked_date": organic.checked_date,
-                        "keyword_id": keyword.id,
-                    }
-                    all_time.append(b)
-
-                    checked_date = organic.checked_date
-                    if checked_date not in dates:
-                        dates.append(checked_date)
 
                 ranked_ids = list(ranked_keyword_ids)
 
             except Exception as e:
                 raise e
-            
 
             # Get all keywords for service + location combo
             get_all_statement = (
@@ -219,39 +207,26 @@ async def find_never_ranked_keywords(
                         "keyword_id": keyword.id,
                     }
                     unranked_keys.append(d)
-            latest_date = max(dates)
-
-            """# NOTE NOTE NOTE:
-            # We are almost there, work on the loop below
-            # We need to append keywords in all_time 
-            # that have dropped out of the top 10
-            # The trick is that using the logfic below
-            # all keywords will have an instance of not 
-            # having the latest date and therefore will still be listed as unranked 
-            # even if they rank in latest.
-            #pprint.pprint(all_time)
-            for keyword in all_time:
-                date = keyword['checked_date']
-                keyword_id = keyword['keyword_id']
-                keys = keyword['keyword']
-
-                if keyword_id in ranked_keyword_ids and date > latest_date:
-                    print(keys)"""
             return unranked_keys
 
         except Exception as e:
             print(f'yeah nah something is wrong around line 240 in queries.py {e}')
             raise e
 
-        
+  
 async def find_dropped_keywords(
         location: LocationEnum,
         service: ServiceEnum,
         link=None,
-        ) -> Keyword:
+        ) -> list:
 
-    """Find keywords that dropped
-    out of the top 10 rank"""
+    """Find keywords that have ranked then dropped
+    out of the top 10 rank.
+
+    Arg: LocationEnum, ServiceEnum and link/url (optional)
+
+    Output: List containing keyword(s)
+    """
     if link is None:
         link = "https://unitedpropertyservices.au/"  # Defaults to united domain
 
@@ -267,19 +242,19 @@ async def find_dropped_keywords(
             )
 
             ranked = await session.exec(ranked_statement)
-            # Get all keyword IDs for where domain ranks
+            # Stores all keyword IDs for where domain ranks
             ranked_keyword_ids = set()  # Using set(0 to avoid duplicates and faster lookup
+            # Stores keywords IDs from most recent rank check date
             latest_ranked_keyword_ids = set()
             # NOTE: all_time obj refers to keywords that have ranked an any
             # given point, however may no longer rank in the top 10.
             all_time = []
-            dates = []
-            dropped = []
-            
+            dates = []  # This is used to find the most recent date
+            dropped = []  # List of keywords if any that have dropped out of top10
+
             for organic, keyword, location_obj in ranked:
                 ranked_keyword_ids.add(keyword.id)
-                checked_date = organic.checked_date
-                
+                checked_date = organic.checked_date                
                 b = {
                         "location": location_obj.location,
                         "keyword": keyword.keywords,
@@ -288,10 +263,10 @@ async def find_dropped_keywords(
                         "keyword_id": keyword.id,
                     }
                 all_time.append(b)
-               
+
                 if checked_date not in dates:
                     dates.append(checked_date)
-           
+            # Get most recent date
             latest_date = max(dates)
 
             for k in all_time:
@@ -300,17 +275,18 @@ async def find_dropped_keywords(
             for i in ranked_keyword_ids:
                 if i not in latest_ranked_keyword_ids:
                     k_id = i
-                
+
             for x in all_time:
                 if x['keyword_id'] == k_id:
                     keyword = x['keyword']
                     if keyword not in dropped:
                         dropped.append(x['keyword'])
-            print(dropped)
             return dropped
-            
+
         except Exception as e:
-            print(f'something wrong in find_dropped_keywords in queries.py {e}')
+            print(
+                f'something wrong in find_dropped_keywords in queries.py {e}'
+            )
             raise e
 
 
