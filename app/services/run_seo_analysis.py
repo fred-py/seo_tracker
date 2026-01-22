@@ -39,6 +39,8 @@ df = pl.DataFrame(home_url_ranked).sort(by='date')
 
 unranked_df = pl.DataFrame(unranked)
 
+dropped_df = pl.DataFrame()
+
 df_new = pl.DataFrame(recent)
 
 

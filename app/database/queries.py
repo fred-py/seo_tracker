@@ -213,7 +213,7 @@ async def find_never_ranked_keywords(
             print(f'yeah nah something is wrong around line 240 in queries.py {e}')
             raise e
 
-  
+
 async def find_dropped_keywords(
         location: LocationEnum,
         service: ServiceEnum,
