@@ -225,7 +225,7 @@ async def find_dropped_keywords(
 
     Arg: LocationEnum, ServiceEnum and link/url (optional)
 
-    Output: List containing keyword(s)
+    Output: List of dicts
     """
     if link is None:
         link = "https://unitedpropertyservices.au/"  # Defaults to united domain
@@ -280,7 +280,14 @@ async def find_dropped_keywords(
                 if x['keyword_id'] == k_id:
                     keyword = x['keyword']
                     if keyword not in dropped:
-                        dropped.append(x['keyword'])
+                        y = {
+                            "location": x['location'],
+                            "keyword": keyword,
+                            "position": x['position'],
+                            "last_time_ranked": x['checked_date'],
+                            "keyword_id": x['keyword_id'],
+                        }
+                        dropped.append(y)
             return dropped
 
         except Exception as e:

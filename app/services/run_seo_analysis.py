@@ -39,12 +39,13 @@ df = pl.DataFrame(home_url_ranked).sort(by='date')
 
 unranked_df = pl.DataFrame(unranked)
 
-dropped_df = pl.DataFrame()
-
+dropped_df = pl.DataFrame(dropped)
+print(dropped_df)
 df_new = pl.DataFrame(recent)
 
 
-def plot_lines_markers_ranked(fig, df, unranked_df, df_new) -> go.Figure:
+def plot_lines_markers_ranked(
+        fig, df, dropped_df, unranked_df, df_new) -> go.Figure:
     """
         This function plots data from rankand keywords data
         including recenlty ranked. It displays 3 legends
@@ -54,15 +55,17 @@ def plot_lines_markers_ranked(fig, df, unranked_df, df_new) -> go.Figure:
         args:
             1. fig - plotly figure object
             2. df refers to ranked data object
-            3. unranked_df data object
-            4. df_new refers to data output from
+            3. dropped_df refers to keywords that
+            no longer rank top 10
+            4. unranked_df data object
+            5. df_new refers to data output from
             get_recently_ranked_keyword method
 
         output:
             Returns an modified plotlly fig obj
     """
     try:
-        
+
         # Manually loop over unique keyword column - plotly express does this automatically
         for keyword in df['keyword'].unique():
             # Filter data for specific keyword on each iteration
@@ -80,18 +83,11 @@ def plot_lines_markers_ranked(fig, df, unranked_df, df_new) -> go.Figure:
             ))
     except Exception as e:
         raise e
-    """
-    try:
-        latest_date = df['date'].max()
-        for keyword in df['keyword'].unique():
-            # Filter data for specific keyword on each iteration
-            keyword_data = df.filter(
-                (pl.col('keyword') == keyword) &
-                (pl.col('date') == latest_date)
-            )
 
-            if len(keyword_data) > 0:
-                fig.add_trace(go.Scatter(
+    try:
+        for keyword in dropped_df['keyword']:
+            keyword_data = dropped_df.filter(pl.col('keyword') == keyword)
+            fig.add_trace(go.Scatter(
                     # NOTE: x and y axis need valid values to work
                     # Will not work if both axis have string value
                     # However this is intended to display legend values only
@@ -101,16 +97,17 @@ def plot_lines_markers_ranked(fig, df, unranked_df, df_new) -> go.Figure:
                     y=[11],
                     mode='markers',
                     name=keyword,
-                    legend='legend1',
+                    legend='legend11',
                     showlegend=True,
-                    marker=dict(
-                        size=9
-                    )
-                ))
 
-    except Exception as e:
-        raise e
-"""
+                    marker=dict(
+                        color='red',
+                        size=8,
+                        symbol='x'
+                    ),
+                ))
+    except ColumnNotFoundError as e:
+        print(f'No keywords dropped out of top 10{e}')
 
     try:
         for keyword in unranked_df['keyword']:
@@ -204,21 +201,21 @@ def update_fig_layout(fig: go.Figure) -> go.Figure:
                 xanchor='left',
             ),
 
-            legend1=dict(
+            legend11=dict(
                 title=dict(
-                    text='All Time Ranked Keywords',
+                    text='Dropped out of Top 10',
                 ),
-                y=0.99,
+                y=0.55,
                 x=1.02,
                 xanchor='left',
             ),
             
             legend2=dict(
                 title=dict(
-                    text='Unranked Keywords',
+                    text='Never Ranked Top 10',
                     
                 ),
-                y=0.5,
+                y=0.3,
                 x=1.02,
                 xanchor='left',
             ),
@@ -271,7 +268,7 @@ service = df['service'][0]
 
 fig = go.Figure()
 
-fig_data = plot_lines_markers_ranked(fig, df, unranked_df, df_new)
+fig_data = plot_lines_markers_ranked(fig, df, dropped_df, unranked_df, df_new)
 
 fig_layout = update_fig_layout(fig_data)
 
