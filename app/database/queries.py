@@ -246,6 +246,9 @@ async def find_dropped_keywords(
             ranked_keyword_ids = set()  # Using set(0 to avoid duplicates and faster lookup
             # Stores keywords IDs from most recent rank check date
             latest_ranked_keyword_ids = set()
+            # IDs from dropped keywords
+            dropped_ids = set()
+            dropped_keywords = set()
             # NOTE: all_time obj refers to keywords that have ranked an any
             # given point, however may no longer rank in the top 10.
             all_time = []
@@ -272,14 +275,25 @@ async def find_dropped_keywords(
             for k in all_time:
                 if k['checked_date'] == latest_date:
                     latest_ranked_keyword_ids.add(k['keyword_id'])
+            # Get ids from keywords that have dropped out of top 10
             for i in ranked_keyword_ids:
                 if i not in latest_ranked_keyword_ids:
-                    k_id = i
+                    dropped_ids.add(i)
 
             for x in all_time:
-                if x['keyword_id'] == k_id:
+                if x['keyword_id'] in dropped_ids:
+                    dropped_keywords.add(x['keyword'])
+            print(dropped_keywords)
+         
+            print(dropped_ids)
+            
+            # NOTE NOTE NOTE
+            # This last loop is needed to return a data that can be used as polars dataframe
+            # aftet the change added dropped_keywords the dropped list is not getting updated??????!! *(*******)
+            for x in all_time:
+                if x['keyword_id'] in dropped_ids:
                     keyword = x['keyword']
-                    if keyword not in dropped:
+                    if keyword not in dropped_keywords:
                         y = {
                             "location": x['location'],
                             "keyword": keyword,
@@ -288,6 +302,7 @@ async def find_dropped_keywords(
                             "keyword_id": x['keyword_id'],
                         }
                         dropped.append(y)
+            
             return dropped
 
         except Exception as e:
