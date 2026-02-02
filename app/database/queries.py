@@ -290,19 +290,23 @@ async def find_dropped_keywords(
             # NOTE NOTE NOTE
             # This last loop is needed to return a data that can be used as polars dataframe
             # aftet the change added dropped_keywords the dropped list is not getting updated??????!! *(*******)
-            for x in all_time:
-                if x['keyword_id'] in dropped_ids:
-                    keyword = x['keyword']
+            for z in all_time:
+                
+                if z['keyword_id'] in dropped_ids:
+                    keyword = z['keyword']
+                    print(f'HERE FRED==== {keyword}')
+
+                    
                     if keyword not in dropped_keywords:
                         y = {
-                            "location": x['location'],
+                            "location": z['location'],
                             "keyword": keyword,
-                            "position": x['position'],
-                            "last_time_ranked": x['checked_date'],
-                            "keyword_id": x['keyword_id'],
+                            "position": z['position'],
+                            "last_time_ranked": z['checked_date'],
+                            "keyword_id": z['keyword_id'],
                         }
                         dropped.append(y)
-            
+            print(f'HERE IS THE DROPPED VARIABLE: {dropped}')
             return dropped
 
         except Exception as e:
