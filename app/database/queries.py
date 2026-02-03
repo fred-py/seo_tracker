@@ -248,12 +248,12 @@ async def find_dropped_keywords(
             latest_ranked_keyword_ids = set()
             # IDs from dropped keywords
             dropped_ids = set()
-            dropped_keywords = set()
             # NOTE: all_time obj refers to keywords that have ranked an any
             # given point, however may no longer rank in the top 10.
             all_time = []
             dates = []  # This is used to find the most recent date
             dropped = []  # List of keywords if any that have dropped out of top10
+            added_keys = set()  # Keywords already added to dropped
 
             for organic, keyword, location_obj in ranked:
                 ranked_keyword_ids.add(keyword.id)
@@ -280,35 +280,21 @@ async def find_dropped_keywords(
                 if i not in latest_ranked_keyword_ids:
                     dropped_ids.add(i)
 
-            for x in all_time:
-                if x['keyword_id'] in dropped_ids:
-                    dropped_keywords.add(x['keyword'])
-            print(dropped_keywords)
-         
-            print(dropped_ids)
-            
-            # NOTE NOTE NOTE
-            # This last loop is needed to return a data that can be used as polars dataframe
-            # aftet the change added dropped_keywords the dropped list is not getting updated??????!! *(*******)
             for z in all_time:
-                
                 if z['keyword_id'] in dropped_ids:
                     keyword = z['keyword']
-                    print(f'HERE FRED==== {keyword}')
-
-                    
-                    if keyword not in dropped_keywords:
+                    # added_keys is used to avoid duplicates
+                    if keyword not in added_keys:
                         y = {
-                            "location": z['location'],
-                            "keyword": keyword,
-                            "position": z['position'],
-                            "last_time_ranked": z['checked_date'],
-                            "keyword_id": z['keyword_id'],
-                        }
+                                "location": z['location'],
+                                "keyword": keyword,
+                                "position": z['position'],
+                                "last_time_ranked": z['checked_date'],
+                                "keyword_id": z['keyword_id'],
+                            }
+                        added_keys.add(keyword)
                         dropped.append(y)
-            print(f'HERE IS THE DROPPED VARIABLE: {dropped}')
             return dropped
-
         except Exception as e:
             print(
                 f'something wrong in find_dropped_keywords in queries.py {e}'
