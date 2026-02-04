@@ -21,10 +21,11 @@ from datetime import datetime
 #'https://unitedpropertyservices.au/carpet-cleaning-busselton-margaret-river/'
 home_url_ranked, unranked, dropped = asyncio.run(
     fetch_ranked_and_unranked_data(
-        LocationEnum.duns,
-        ServiceEnum.carpet,
-        'https://unitedpropertyservices.au/',
+        LocationEnum.bus,
+        ServiceEnum.tile_grout,
+        #'https://unitedpropertyservices.au/',
         #'https://unitedpropertyservices.au/carpet-cleaning-busselton-margaret-river/'
+        'https://unitedpropertyservices.au/tile-and-grout-cleaning-south-west/'
     ))
 
 
@@ -106,6 +107,10 @@ def plot_lines_markers_ranked(
                         symbol='x'
                     ),
                 ))
+    # This error handling address empty keyword column
+    # When no data is available
+    # Raising or returning the error would stop chart from 
+    # plotting
     except ColumnNotFoundError as e:
         print(f'No keywords dropped out of top 10{e}')
 
@@ -131,8 +136,8 @@ def plot_lines_markers_ranked(
                         symbol='x'
                     ),
                 ))
-    except ColumnNotFoundError:
-        print('No unranked keyword outside of top 10')
+    except ColumnNotFoundError as e:
+        print(f'No unranked keyword outside of top 10: {e}')
 
     try:
         for keywords in df_new['keyword']:
@@ -155,8 +160,8 @@ def plot_lines_markers_ranked(
                     symbol='arrow'
                 ),
             ))
-    except Exception as e:
-        raise e
+    except ColumnNotFoundError:
+        print('No recently ranked keywords')
     return fig
 
 
