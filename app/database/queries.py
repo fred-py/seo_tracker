@@ -297,9 +297,9 @@ async def find_dropped_keywords(
             return dropped
         except Exception as e:
             print(
-                f'something wrong in find_dropped_keywords in queries.py {e}'
+                f'something wrong in find_dropped_keywords in queries.py => ERROR: {e}'
             )
-            raise e
+            
 
 
 async def fetch_ranked_and_unranked_data(location_enum, service_enum, url):

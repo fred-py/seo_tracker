@@ -18,7 +18,7 @@ def get_earliest_ids(data) -> set:
         fetch_ranked_and_unraked_data
         function
     """
-
+    
     # Get all dates in the column
     all_dates = [d['date']for d in data]
     # Get earliest (minimum) date
