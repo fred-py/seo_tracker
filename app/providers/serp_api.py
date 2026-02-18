@@ -10,12 +10,14 @@ from backend.app.models import ServiceEnum
 from backend.app.providers.config import mr, bus, duns, mr_keywords, \
     mr_upholstery_keys, bus_keywords, bus_upholstery_keys, \
     duns_keywords, duns_upholstery_keys, \
-    mr_tiles, bus_tiles, duns_tiles
+    mr_tiles, bus_tiles, duns_tiles, \
+    mr_curtains, duns_curtains, bus_curtains
 
 import asyncio
 
 load_dotenv()
 api_key = os.getenv('API_KEY')
+api_key_2 = os.getenv('API_KEY_2')
 
 
 date_obj = datetime.now(tz=tz.tzlocal())
@@ -38,7 +40,7 @@ class GetGoogleResults:
             'num': '10',
             'start': '0',
             'safe': 'active',
-            'api_key': api_key
+            'api_key': api_key_2
         }
         return params
 
@@ -155,6 +157,15 @@ async def save_all_concurrently():
         fetch_and_save(mr, mr_tiles, ServiceEnum.tile_grout),
         fetch_and_save(bus, bus_tiles, ServiceEnum.tile_grout),
         fetch_and_save(duns, duns_tiles, ServiceEnum.tile_grout),
+    )
+
+    await asyncio.sleep(2)
+
+    # Curtains
+    await asyncio.gather(
+        fetch_and_save(mr, mr_curtains, ServiceEnum.curtains),
+        fetch_and_save(bus, bus_curtains, ServiceEnum.curtains),
+        fetch_and_save(duns, duns_curtains, ServiceEnum.curtains),
     )
 
 

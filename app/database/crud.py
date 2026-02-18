@@ -29,7 +29,7 @@ async def get_or_create_location(session, location_name: str) -> Location:
             location = Location(location=location_name)
             session.add(location)
             await session.flush()  # Get the ID without committing.
-    
+
     except Exception as e:
         # NOTE: Set up exception class once error output is clear
         print(f"Error: {e}")

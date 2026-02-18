@@ -18,19 +18,20 @@ def get_earliest_ids(data) -> set:
         fetch_ranked_and_unraked_data
         function
     """
-    
-    # Get all dates in the column
-    all_dates = [d['date']for d in data]
-    # Get earliest (minimum) date
-    earliest_date = min(all_dates)
-    ids = set([])  # Set to avoid duplicates
-    for d in data:
-        date = d['date']
-        if date == earliest_date:
-            i = d['id']
-            ids.add(i)
-    return ids
-
+    try:
+        # Get all dates in the column
+        all_dates = [d['date']for d in data]
+        # Get earliest (minimum) date
+        earliest_date = min(all_dates)
+        ids = set([])  # Set to avoid duplicates
+        for d in data:
+            date = d['date']
+            if date == earliest_date:
+                i = d['id']
+                ids.add(i)
+        return ids
+    except ValueError as e:
+        print(f'Check seo_logic module. ERROR: {e}')
 
 def get_recently_ranked_keyword(data, ids: set):
     """

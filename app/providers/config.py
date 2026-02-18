@@ -105,3 +105,45 @@ duns_tiles = [
     "tile and grout cleaning nearby",
     "tile and grout dunsborough"
 ]
+
+
+# Curtains
+
+mr_curtains = [
+    "curtain cleaning",
+    "curtain cleaning margaret river",
+    "curtain cleaning near me",
+    "curtain cleaning services",
+    "curtain cleaning service near me"
+    "dry cleaning curtains",
+    "dry cleaning curtains near me",
+    "dry cleaning curtains cost",
+    "curtains dry cleaning",
+    "curtains and blinds cleaning",
+
+]
+
+bus_curtains = [
+    "curtain cleaning busselton",
+    "curtain cleaning near me",
+    "curtain cleaning service near me",
+    "curtain cleaners in my area",
+    "curtain cleaning business",
+    "curtain cleaners near me"
+    "curtain cleaning services",
+    "curtain cleaners in my area",
+    "curtain cleaners near me prices",
+    "dry cleaning curtains",
+    "dry cleaning curtains near me",
+    "dry cleaning curtains cost",
+]
+
+duns_curtains = [
+    "curtain cleaning dunsborough",
+    "curtain cleaning dunsborough wa",
+    "curtain cleaning service near me",
+    "curtain cleaning service",
+    "curtains cleaning dunsborough",
+    "dry cleaning curtains",
+    "dry cleaning curtains near me",
+]
