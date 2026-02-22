@@ -11,7 +11,8 @@ from backend.app.providers.config import mr, bus, duns, mr_keywords, \
     mr_upholstery_keys, bus_keywords, bus_upholstery_keys, \
     duns_keywords, duns_upholstery_keys, \
     mr_tiles, bus_tiles, duns_tiles, \
-    mr_curtains, duns_curtains, bus_curtains
+    mr_curtains, duns_curtains, bus_curtains, \
+    mr_leather, bus_leather, duns_leather
 
 import asyncio
 
@@ -166,6 +167,13 @@ async def save_all_concurrently():
         fetch_and_save(mr, mr_curtains, ServiceEnum.curtains),
         fetch_and_save(bus, bus_curtains, ServiceEnum.curtains),
         fetch_and_save(duns, duns_curtains, ServiceEnum.curtains),
+    )
+    
+    # Leather
+    await asyncio.gather(
+        fetch_and_save(mr, mr_leather, ServiceEnum.leather),
+        fetch_and_save(bus, bus_leather, ServiceEnum.leather),
+        fetch_and_save(duns, duns_leather, ServiceEnum.leather),
     )
 
 

@@ -147,3 +147,37 @@ duns_curtains = [
     "dry cleaning curtains",
     "dry cleaning curtains near me",
 ]
+
+# Leather Clean 
+bus_leather = [
+    "leather clean busselton",
+    "leather cleaning busselton",
+    "leather cleaning near me",
+    "leather lounge cleaning near me",
+    "leather couch cleaning near me",
+    "leather couch cleaning service",
+    "leather couch cleaners near Busselton WA"
+    "leather couch protection near me"
+]
+
+duns_leather = [
+    "leather clean dunsborough",
+    "leather cleaning dunsborough",
+    "leather cleaning near me",
+    "leather lounge cleaning near me",
+    "leather couch cleaning service",
+    "leather couch cleaning near me",
+    "leather couch cleaners near Dunsborough WA"
+    "leather couch protection near me"
+]
+
+mr_leather = [
+    "leather clean margaret river",
+    "leather cleaning margaret river",
+    "leather cleaning near me",
+    "leather lounge cleaning near me",
+    "leather couch cleaning service",
+    "leather couch cleaning near me",
+    "leather couch cleaners near Margaret River WA"
+    "leather couch protection near me"
+]

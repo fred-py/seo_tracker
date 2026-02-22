@@ -21,13 +21,14 @@ from datetime import datetime
 #'https://unitedpropertyservices.au/carpet-cleaning-busselton-margaret-river/'
 home_url_ranked, unranked, dropped = asyncio.run(
     fetch_ranked_and_unranked_data(
-        LocationEnum.bus,
-        ServiceEnum.upholstery,
+        LocationEnum.mr,
+        ServiceEnum.carpet,
         'https://unitedpropertyservices.au/',
         #'https://unitedpropertyservices.au/carpet-cleaning-busselton-margaret-river/'
         #'https://unitedpropertyservices.au/tile-and-grout-cleaning-south-west/'
         #'https://unitedpropertyservices.au/upholstery-cleaning-dunsborough-margaret-river/'
         #'https://unitedpropertyservices.au/curtain-cleaning/'
+        #"https://unitedpropertyservices.au/leather-clean-protection/"
     ))
 
 
