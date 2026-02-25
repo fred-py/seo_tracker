@@ -12,11 +12,11 @@ load_dotenv()
 app = FastAPI()
 openai_client = OpenAI(api_key=os.getenv('OPEN_AI_KEY'))
 
-
-#@app.get("/", include_in_schema=False)
-#ef docs_redirect_controller():
-#   """Redirect for fastapi documententioon - Disable this on production"""
-#    return RedirectResponse(url="/docs", status_code=status.HTTP_303_SEE_OTHER)
+# NOTE: DISABLE IN PRODUCTION ******
+@app.get("/", include_in_schema=False)
+def docs_redirect_controller():
+    """Redirect for fastapi documententioon - Disable this on production"""
+    return RedirectResponse(url="/docs", status_code=303)
 
 
 @app.get("/ping")
