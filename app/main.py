@@ -19,7 +19,7 @@ def docs_redirect_controller():
     return RedirectResponse(url="/docs", status_code=303)
 
 
-@app.get("/ping")
+@app.get("/")
 async def pong():
     return {"ping": "pong!"}
 

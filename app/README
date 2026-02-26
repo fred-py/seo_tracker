@@ -1,3 +1,12 @@
+Project structure:
+- Modular Structure, modules that are closely related and refer to a specific
+domain are grouped together. You will find global setting in the root directory
+such as models.py, db.py etc...
+
+New packages can be created containing the necessery code, eg. users directory will contain
+users schema, authentication, routers etc...
+
+
 SQLModel combines SQLAlchemy with Pydentic, data validation out of the box.
 Reduces redundancy, less code. 
 Synchronous support to handle multiple requests concurrently
@@ -34,3 +43,5 @@ for keywords in df_new['keyword']:
                     symbol='arrow'
                 ),
             ))
+
+

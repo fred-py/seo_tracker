@@ -5,7 +5,7 @@ Plotly graph objects enables more customisation
 import polars as pl
 from polars.exceptions import ColumnNotFoundError
 
-from backend.app.services.seo_logic import get_earliest_ids, \
+from backend.app.seo.services import get_earliest_ids, \
     get_recently_ranked_keyword
 
 from backend.app.database.queries import fetch_ranked_and_unranked_data

@@ -168,7 +168,7 @@ async def save_all_concurrently():
         fetch_and_save(bus, bus_curtains, ServiceEnum.curtains),
         fetch_and_save(duns, duns_curtains, ServiceEnum.curtains),
     )
-    
+
     # Leather
     await asyncio.gather(
         fetch_and_save(mr, mr_leather, ServiceEnum.leather),
