@@ -9,6 +9,7 @@ from sqlalchemy.orm import sessionmaker
 
 from dotenv import load_dotenv
 
+
 # parent property moves up one directory level each time it is called
 # The below represents seo_tracker/backend/.env
 project_root = Path(__file__).parent.parent

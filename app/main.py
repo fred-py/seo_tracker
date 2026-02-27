@@ -1,8 +1,9 @@
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.responses import RedirectResponse
 from openai import OpenAI
 #from .db import init_db
 from .models import Location, OrganicRank
+from backend.app.modules.seo.router import router as seo_router
 from dotenv import load_dotenv
 import os
 
@@ -11,6 +12,10 @@ load_dotenv()
 
 app = FastAPI()
 openai_client = OpenAI(api_key=os.getenv('OPEN_AI_KEY'))
+
+
+app.include_router(seo_router)
+
 
 # NOTE: DISABLE IN PRODUCTION ******
 @app.get("/", include_in_schema=False)

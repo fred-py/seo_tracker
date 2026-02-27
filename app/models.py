@@ -7,6 +7,7 @@ from sqlalchemy import UniqueConstraint
 
 
 # ** GLOBAL MODELS **
+# NOTE: only used when running run_seo_analysis module on its on
 class ServiceEnum(str, Enum):
     carpet = "carpet"
     upholstery = "upholstery"
