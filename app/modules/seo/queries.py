@@ -57,8 +57,9 @@ async def get_url_rank_by_service_location(
         Retrieves rank for single url
 
         Arg:
-        url to be retrieved from the database.
-        If no url is passed, defaults to https://unitedpropertyservices.au/
+        location: must match exact string already in the database
+        service: must match exact string already in the database
+        url: to be retrieved from the database.
 
         Link row contains the full url eg. https://unitedpropertyservices.au/
     """

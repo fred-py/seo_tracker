@@ -41,9 +41,10 @@ def some_function():
     As an example, you can reuse the same database session
     creation or user fetching functions across different
     parts of your API,
-    Page 57 
+    Page 57
     """
     pass
+
 
 @app.get("/chat")
 def chat_controller(prompt: str = "Haha yeah buddy"):
@@ -56,4 +57,3 @@ def chat_controller(prompt: str = "Haha yeah buddy"):
     )
     statement = response.choices[0].message.content
     return {"statement": statement}
-
