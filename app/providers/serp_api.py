@@ -41,7 +41,7 @@ class GetGoogleResults:
             'num': '10',
             'start': '0',
             'safe': 'active',
-            'api_key': api_key_2
+            'api_key': api_key
         }
         return params
 
