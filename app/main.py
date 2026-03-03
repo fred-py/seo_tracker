@@ -28,6 +28,7 @@ def docs_redirect_controller():
 async def pong():
     return {"ping": "pong!"}
 
+
 @app.get("/some_endpoint")
 def some_function():
     """
@@ -45,6 +46,7 @@ def some_function():
     """
     pass
 
+
 @app.get("/chat")
 def chat_controller(prompt: str = "Haha yeah buddy"):
     response = openai_client.chat.completions.create(
@@ -56,4 +58,3 @@ def chat_controller(prompt: str = "Haha yeah buddy"):
     )
     statement = response.choices[0].message.content
     return {"statement": statement}
-

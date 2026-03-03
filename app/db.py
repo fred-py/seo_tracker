@@ -26,7 +26,9 @@ engine = create_async_engine(DATABASE_URL, echo=True, future=True)
 # otherwise, SQLModel might fail to initialize relationships properly
 # for more details: https://github.com/fastapi/full-stack-fastapi-template/issues/28
 
-# Session initialised at module level 
+# Session initialised at module level
+# NOTE: To be used with standalone scripts only
+# For endpoints use get_session()
 async_session = sessionmaker(
         engine, class_=AsyncSession, expire_on_commit=False
     )
