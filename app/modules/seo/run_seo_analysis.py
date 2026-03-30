@@ -20,15 +20,20 @@ from datetime import datetime
 #'https://unitedpropertyservices.au/carpet-cleaning-busselton-margaret-river/'
 result = asyncio.run(
     fetch_ranked_and_unranked_data(
-        'Margaret River, Western Australia, Australia',
-        'carpet',
-        'https://unitedpropertyservices.au/',
+        'Busselton, Western Australia, Australia',
+        'water_damage',
+        #'https://unitedpropertyservices.au/',
         #'https://unitedpropertyservices.au/carpet-cleaning-busselton-margaret-river/'
         #'https://unitedpropertyservices.au/tile-and-grout-cleaning-south-west/'
         #'https://unitedpropertyservices.au/upholstery-cleaning-dunsborough-margaret-river/'
         #'https://unitedpropertyservices.au/curtain-cleaning/'
         #"https://unitedpropertyservices.au/leather-clean-protection/"
+        'https://unitedpropertyservices.au/water-damage-and-restoration/'
     ))
+
+#'Margaret River, Western Australia, Australia'
+#'Busselton, Western Australia, Australia'
+# #'Dunsborough, Western Australia',
 
 ranked = result['ranked']
 unranked = result['unranked']
@@ -215,7 +220,7 @@ def update_fig_layout(fig: go.Figure) -> go.Figure:
                 title=dict(
                     text='Dropped out of Top 10',
                 ),
-                y=0.55,
+                y=0.65,
                 x=1.02,
                 xanchor='left',
             ),

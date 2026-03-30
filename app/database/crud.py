@@ -30,11 +30,8 @@ async def get_or_create_location(session, location_name: str) -> Location:
             session.add(location)
             await session.flush()  # Get the ID without committing.
 
-    except Exception as e:
-        # NOTE: Set up exception class once error output is clear
-        print(f"Error: {e}")
-        print(type(e))
-        print(repr(e))
+    except TimeoutError as e:
+        raise e
 
     return location
 
@@ -111,33 +108,41 @@ async def save_organic_results(
     """
     async with async_session() as session:
 
-        location_name = data[0]['location']
-        location = await get_or_create_location(session, location_name)
+        try:
+            location_name = data[0]['location']
+            if location_name:
+                location = await get_or_create_location(session, location_name)
 
-        for item in data:
-            keyword_text = item['keyword']
-            checked_date = item['checked_date']
-            keyword = await get_or_create_keyword(
-                    session,
-                    keyword_text,
-                    service,
-                    location
-                )
-            # List comprehension to add ranks at once
-            # As opposed to adding a rank after each iteration on traditional loop
-            rank = [
-                OrganicRank(
-                        title=rank_item['title'],
-                        source=rank_item['source'],
-                        position=rank_item['position'],
-                        link=rank_item['link'],
-                        checked_date=checked_date,
-                        keyword=keyword,  # Set relationship between OrganicRank and Keyword model.
-                )
-                for rank_item in item['rank']
-            ]
-            session.add_all(rank)  # Add all ranks at once    
-        await session.commit()
+                for item in data:
+                    keyword_text = item['keyword']
+                    checked_date = item['checked_date']
+                    keyword = await get_or_create_keyword(
+                            session,
+                            keyword_text,
+                            service,
+                            location
+                        )
+                    # List comprehension to add ranks at once
+                    # As opposed to adding a rank after each iteration on traditional loop
+                    rank = [
+                        OrganicRank(
+                                title=rank_item['title'],
+                                source=rank_item['source'],
+                                position=rank_item['position'],
+                                link=rank_item['link'],
+                                checked_date=checked_date,
+                                keyword=keyword,  # Set relationship between OrganicRank and Keyword model.
+                        )
+                        for rank_item in item['rank']
+                    ]
+                    session.add_all(rank)  # Add all ranks at once    
+                await session.commit()
+            else:
+                print(f'locantion_name value null =>  {location_name}')
+        except Exception as e:
+            print(type(e))
+            print(repr(e))
+            print(f'Error => {e}')
 
 
 async def get_keywords_by_location_service(

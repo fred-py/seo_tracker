@@ -181,3 +181,76 @@ mr_leather = [
     "leather couch cleaners near Margaret River WA"
     "leather couch protection near me"
 ]
+
+# Water Damage & Restoration
+mr_water = [
+    "Water damage restoration Margaret River",
+    "Emergency water damage Margaret River",
+    "Flood damage restoration Margaret River",
+    "Water damage repair Margaret River",
+    "Water extraction Margaret River",
+    "Flood cleanup Margaret River",
+    "Water damage restoration near me",
+    "Flood and water damage Margaret River WA",
+    "Water damage restoration Margaret River",
+    "Emergency flood cleanup Margaret River",
+    "Wet carpet drying Margaret River",
+    "Burst pipe water damage Margaret River",
+    "Sewage cleanup Margaret River",
+    "Ceiling water damage repair Margaret River",
+    "Subfloor drying Margaret River",
+    "Leak damage repair Margaret River",
+    "How to dry out a flooded house Margaret River",
+    "What to do after a flood at home",
+    "How long does water damage restoration take",
+    "Does insurance cover water damage Margaret River",
+    "Mold removal after water damage Margaret River"
+]
+
+bus_water = [
+    "Water damage restoration Busselton",
+    "Emergency water damage Busselton",
+    "Flood damage restoration Busselton",
+    "Water damage repair Busselton",
+    "Water extraction Busselton",
+    "Flood cleanup Busselton",
+    "Water damage restoration near me",
+    "Flood and water damage Busselton WA",
+    "Water damage restoration Busselton",
+    "Emergency flood cleanup Busselton",
+    "Wet carpet drying Busselton",
+    "Burst pipe water damage Busselton",
+    "Sewage cleanup Busselton",
+    "Ceiling water damage repair Busselton",
+    "Subfloor drying Busselton",
+    "Leak damage repair Busselton",
+    "How to dry out a flooded house Busselton",
+    "What to do after a flood at home",
+    "How long does water damage restoration take",
+    "Does insurance cover water damage Busselton",
+    "Mold removal after water damage Busselton"
+]
+
+duns_water = [
+    "Water damage restoration Dunsborough",
+    "Emergency water damage Dunsborough",
+    "Flood damage restoration Dunsborough",
+    "Water damage repair Dunsborough",
+    "Water extraction Dunsborough",
+    "Flood cleanup Dunsborough",
+    "Water damage restoration near me",
+    "Flood and water damage Dunsborough WA",
+    "Water damage restoration Dunsborough",
+    "Emergency flood cleanup Dunsborough",
+    "Wet carpet drying Dunsborough",
+    "Burst pipe water damage Dunsborough",
+    "Sewage cleanup Dunsborough",
+    "Ceiling water damage repair Dunsborough",
+    "Subfloor drying Dunsborough",
+    "Leak damage repair Dunsborough",
+    "How to dry out a flooded house Dunsborough",
+    "What to do after a flood at home",
+    "How long does water damage restoration take",
+    "Does insurance cover water damage Dunsborough",
+    "Mold removal after water damage Dunsborough"
+]

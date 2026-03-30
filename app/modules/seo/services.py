@@ -18,7 +18,7 @@ def get_earliest_ids(data: list) -> set:
         fetch_ranked_and_unraked_data
         function
     """
-    
+
     try:
         # Get all dates in the column
         all_dates = [d['date']for d in data]
@@ -72,5 +72,4 @@ def get_recently_ranked_keyword(data, ids: set):
             'location': d['location']
         }
         new.append(n)
-
     return new

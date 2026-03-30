@@ -58,4 +58,3 @@ def chat_controller(prompt: str = "Haha yeah buddy"):
     )
     statement = response.choices[0].message.content
     return {"statement": statement}
-

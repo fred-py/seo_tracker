@@ -1,0 +1,5 @@
+.env
+__pycache__
+/app/modules/seo/test_responses
+.DS_Store
+results.json

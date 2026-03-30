@@ -12,7 +12,8 @@ from backend.app.providers.config import mr, bus, duns, mr_keywords, \
     duns_keywords, duns_upholstery_keys, \
     mr_tiles, bus_tiles, duns_tiles, \
     mr_curtains, duns_curtains, bus_curtains, \
-    mr_leather, bus_leather, duns_leather
+    mr_leather, bus_leather, duns_leather, \
+    mr_water, bus_water, duns_water
 
 import asyncio
 
@@ -134,7 +135,7 @@ async def save_all_concurrently():
     """Fetch and save all data concurrenlty
     in batches by service type.
     Must be done in batches to avoid rate limit."""
-    
+    """
     # Carpet - Batch 1
     await asyncio.gather(
         fetch_and_save(mr, mr_keywords, ServiceEnum.carpet),
@@ -174,6 +175,13 @@ async def save_all_concurrently():
         fetch_and_save(mr, mr_leather, ServiceEnum.leather),
         fetch_and_save(bus, bus_leather, ServiceEnum.leather),
         fetch_and_save(duns, duns_leather, ServiceEnum.leather),
+    )
+    """
+    # Water Damage & Restoration
+    await asyncio.gather(
+        fetch_and_save(mr, mr_water, ServiceEnum.water_damage),
+        fetch_and_save(bus, bus_water, ServiceEnum.water_damage),
+        fetch_and_save(duns, duns_water, ServiceEnum.water_damage),
     )
 
 
