@@ -1,3 +1,29 @@
+
+[project]
+version = "0.0.1"
+
+name = "seo-tracker"
+dependencies = [
+    "fastapi[standard]",
+    "alembic==1.18.4",
+    "asyncpg==0.31.0",
+    "backend==0.2.4.1",
+    "fastapi==0.135.3",
+    "plotly==5.14.1",
+    "polars==1.39.3",
+    "pydantic==2.13.1",
+    "pytest==9.0.3",
+    "python-dotenv==1.2.2",
+    "python_dateutil==2.9.0.0",
+    "serpapi==1.0.2",
+    "SQLAlchemy==2.0.49",
+    "sqlmodel==0.0.38",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*", "migrations*"]
+
 [tool.alembic]
 
 # path to migration scripts.
@@ -16,6 +42,9 @@ script_location = "migrations/scripts"
 prepend_sys_path = [
     "."
 ]
+
+[tool.fastapi]
+entrypoint = "app.main:app"
 
 # timezone to use when rendering the date within the migration file
 # as well as the filename.
