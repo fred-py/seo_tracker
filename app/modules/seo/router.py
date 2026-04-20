@@ -1,8 +1,7 @@
 from fastapi import APIRouter, Depends
-from app.modules.seo.queries import fetch_ranked_and_unranked_data
-from app.modules.seo.models import SearchItems
-from app.db import get_session
-import asyncio
+from .queries import fetch_ranked_and_unranked_data
+from .models import SearchItems
+
 
 router = APIRouter()
 

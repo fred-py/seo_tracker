@@ -31,7 +31,7 @@ class GetGoogleResults:
     def __init__(self, location: str) -> None:
         self.location = location
 
-    def set_organic_params(self, query):
+    def set_organic_params(self, query, key):
         params = {
             'engine': 'google',
             'q': query,
@@ -42,11 +42,11 @@ class GetGoogleResults:
             'num': '10',
             'start': '0',
             'safe': 'active',
-            'api_key': api_key
+            'api_key': key
         }
         return params
 
-    def set_google_local_places_params(self, query):
+    def set_google_local_places_params(self, query, key):
         params = {
             'engine': 'google_local',
             'q': query,
@@ -57,7 +57,7 @@ class GetGoogleResults:
             'num': '11',
             'start': '0',
             'safe': 'active',
-            'api_key': api_key
+            'api_key': key
         }
         return params
 
@@ -117,6 +117,8 @@ async def fetch_and_save(
         keywords: list,
         service: ServiceEnum):
 
+    
+    
     set_location = GetGoogleResults(location)
     data_list = []
 
