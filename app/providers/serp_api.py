@@ -135,6 +135,9 @@ async def save_all_concurrently():
     """Fetch and save all data concurrenlty
     in batches by service type.
     Must be done in batches to avoid rate limit."""
+    print('===================================')
+    print("Note: This will consume 179 searches on SerpApi out of 250")
+    ")
     
     # Carpet - Batch 1
     await asyncio.gather(
@@ -183,7 +186,7 @@ async def save_all_concurrently():
         fetch_and_save(bus, bus_water, ServiceEnum.water_damage),
         fetch_and_save(duns, duns_water, ServiceEnum.water_damage),
     )
-
+    # NOTE: 
 
 if __name__ == '__main__':
     asyncio.run(save_all_concurrently())
