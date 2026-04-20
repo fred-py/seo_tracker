@@ -3,7 +3,7 @@ from fastapi.responses import RedirectResponse
 #from openai import OpenAI
 #from .db import init_db
 from .models import Location, OrganicRank
-from backend.app.modules.seo.router import router as seo_router
+from app.modules.seo.router import router as seo_router
 from dotenv import load_dotenv
 import os
 

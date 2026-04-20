@@ -5,9 +5,9 @@ import json
 from dotenv import load_dotenv
 from dateutil import tz
 from datetime import datetime
-from backend.app.database.crud import save_organic_results
-from backend.app.models import ServiceEnum
-from backend.app.providers.config import mr, bus, duns, mr_keywords, \
+from app.database.crud import save_organic_results
+from app.models import ServiceEnum
+from app.providers.config import mr, bus, duns, mr_keywords, \
     mr_upholstery_keys, bus_keywords, bus_upholstery_keys, \
     duns_keywords, duns_upholstery_keys, \
     mr_tiles, bus_tiles, duns_tiles, \
@@ -135,7 +135,7 @@ async def save_all_concurrently():
     """Fetch and save all data concurrenlty
     in batches by service type.
     Must be done in batches to avoid rate limit."""
-    """
+    
     # Carpet - Batch 1
     await asyncio.gather(
         fetch_and_save(mr, mr_keywords, ServiceEnum.carpet),
@@ -176,7 +176,7 @@ async def save_all_concurrently():
         fetch_and_save(bus, bus_leather, ServiceEnum.leather),
         fetch_and_save(duns, duns_leather, ServiceEnum.leather),
     )
-    """
+    
     # Water Damage & Restoration
     await asyncio.gather(
         fetch_and_save(mr, mr_water, ServiceEnum.water_damage),
