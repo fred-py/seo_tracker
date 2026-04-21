@@ -41,24 +41,35 @@ def check_searches_left(key) -> bool:
 
 def get_api_key(key1, key2) -> str:
     """
-        Returns API key if enough 'total_searches_left'
+        This function takes 2 api keys and calls
+        check_searches_left().
+        
+        Returns an API key if 'total_searches_left'
+        is > 179.
             
-        NOTE: FINISH THIS MAYBE USE A GET REQUES FUNC AND CALL IT FROM 
-        check_searches_left
-    """    
+        Args: 2 api keys
+
+        Output: API Key from .env
+    """
+    # Using two if statements to minimise
+    # get request calls to SERPAPI when
+    # key1 has enough searches left
     k_1 = check_searches_left(key1)
-    k_2 = check_searches_left(key2)
-    
     if k_1 is True:
+        print('Calling from API Key 1')
         return k_1
-    elif k_2 is True:
+
+    k_2 = check_searches_left(key2)
+    if k_2 is True:
+        print('Calling from API Key 2')
         return k_2
     else:
-        print('No searches left on the api key(s)')
-    
+        print('No searches left on either keys')
+        return None
 
 
-
-
+# NOTE: The below is for testing only
+# Functions in this module are imported
+# and called from a different module
 if __name__ == '__main__':
-    check_searches_left(api_key)
+    get_api_key(api_key, api_key_2)

@@ -7,6 +7,7 @@ from dateutil import tz
 from datetime import datetime
 from app.database.crud import save_organic_results
 from app.models import ServiceEnum
+from app.providers.services import get_api_key
 from app.providers.config import mr, bus, duns, mr_keywords, \
     mr_upholstery_keys, bus_keywords, bus_upholstery_keys, \
     duns_keywords, duns_upholstery_keys, \
@@ -117,19 +118,20 @@ async def fetch_and_save(
         keywords: list,
         service: ServiceEnum):
 
-    
-    
+    key = get_api_key(api_key, api_key_2)
+
+    if key is None:
+        return key, 'No searches left, check SerpAPI'
+
     set_location = GetGoogleResults(location)
     data_list = []
 
     for keyword in keywords:
-        params = set_location.set_organic_params(keyword)
+        params = set_location.set_organic_params(keyword, key)
         raw = GoogleSearch(params)
         data = set_location.get_organic_results(raw, keyword)
         data_list.append(data)
-
-    #pprint.pprint(type(data_list[0]['checked_date']))
-    #pprint.pprint(data_list)
+    
     await save_organic_results(data_list, service=service)
 
 
@@ -138,9 +140,8 @@ async def save_all_concurrently():
     in batches by service type.
     Must be done in batches to avoid rate limit."""
     print('===================================')
-    print("Note: This will consume 179 searches on SerpApi out of 250")
-    ")
-    
+    print("Note: This will consume 179 out of 250 searches on SerpApi")
+
     # Carpet - Batch 1
     await asyncio.gather(
         fetch_and_save(mr, mr_keywords, ServiceEnum.carpet),
@@ -181,14 +182,14 @@ async def save_all_concurrently():
         fetch_and_save(bus, bus_leather, ServiceEnum.leather),
         fetch_and_save(duns, duns_leather, ServiceEnum.leather),
     )
-    
+
     # Water Damage & Restoration
     await asyncio.gather(
         fetch_and_save(mr, mr_water, ServiceEnum.water_damage),
         fetch_and_save(bus, bus_water, ServiceEnum.water_damage),
         fetch_and_save(duns, duns_water, ServiceEnum.water_damage),
     )
-    # NOTE: 
+
 
 if __name__ == '__main__':
     asyncio.run(save_all_concurrently())
