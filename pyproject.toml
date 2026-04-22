@@ -43,7 +43,7 @@ prepend_sys_path = [
     "."
 ]
 
-[tool.fastapi]
+#[tool.fastapi]
 entrypoint = "app.main:app"
 
 # timezone to use when rendering the date within the migration file
