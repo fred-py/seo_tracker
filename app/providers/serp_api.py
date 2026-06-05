@@ -5,10 +5,10 @@ import json
 from dotenv import load_dotenv
 from dateutil import tz
 from datetime import datetime
-from app.database.crud import save_organic_results
-from app.models import ServiceEnum
-from app.providers.services import get_api_key
-from app.providers.config import mr, bus, duns, mr_keywords, \
+from ..database.crud import save_organic_results
+from ..models import ServiceEnum
+from ..providers.services import get_api_key
+from ..providers.config import mr, bus, duns, mr_keywords, \
     mr_upholstery_keys, bus_keywords, bus_upholstery_keys, \
     duns_keywords, duns_upholstery_keys, \
     mr_tiles, bus_tiles, duns_tiles, \
@@ -64,7 +64,7 @@ class GetGoogleResults:
 
     def get_organic_results(self, raw_data, keyword) -> dict:
         results = raw_data.get_dict()
-        #print(results)
+        print(results)
         organic_results = results['organic_results']
         #pprint.pprint(f'Organic results for {self.q} in {self.location}')
         data_dict = {
@@ -99,7 +99,7 @@ class GetGoogleResults:
                 if r['reviews_original'] == 'No reviews':
                     rating = 'n/a'
                 else:
-                    rating = r['rating'] 
+                    rating = r['rating']
                 data = {
                         'title': r['title'],
                         'position': r['position'],
@@ -131,7 +131,7 @@ async def fetch_and_save(
         raw = GoogleSearch(params)
         data = set_location.get_organic_results(raw, keyword)
         data_list.append(data)
-    
+
     await save_organic_results(data_list, service=service)
 
 
@@ -141,7 +141,7 @@ async def save_all_concurrently():
     Must be done in batches to avoid rate limit."""
     print('===================================')
     print("Note: This will consume 179 out of 250 searches on SerpApi")
-
+    """
     # Carpet - Batch 1
     await asyncio.gather(
         fetch_and_save(mr, mr_keywords, ServiceEnum.carpet),
@@ -168,6 +168,7 @@ async def save_all_concurrently():
     )
 
     await asyncio.sleep(2)
+    """
 
     # Curtains
     await asyncio.gather(

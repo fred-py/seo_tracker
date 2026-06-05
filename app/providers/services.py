@@ -54,19 +54,21 @@ def get_api_key(key1, key2) -> str:
     # Using two if statements to minimise
     # get request calls to SERPAPI when
     # key1 has enough searches left
-    k_1 = check_searches_left(key1)
-    if k_1 is True:
-        print('Calling from API Key 1')
-        return k_1
+    try:
+        k_1 = check_searches_left(key1)
+        if k_1 is True:
+            print('Calling from API Key 1')
+            return key1
 
-    k_2 = check_searches_left(key2)
-    if k_2 is True:
-        print('Calling from API Key 2')
-        return k_2
-    else:
-        print('No searches left on either keys')
-        return None
-
+        k_2 = check_searches_left(key2)
+        if k_2 is True:
+            print('Calling from API Key 2')
+            return key2
+        else:
+            print('No searches left on either keys')
+            return None
+    except Exception as e:
+        raise f'Error running get_api_key method: {e}'
 
 # NOTE: The below is for testing only
 # Functions in this module are imported
