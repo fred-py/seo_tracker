@@ -1,3 +1,6 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [project]
 version = "0.0.1"
@@ -43,8 +46,8 @@ prepend_sys_path = [
     "."
 ]
 
-#[tool.fastapi]
-entrypoint = "backend.app.main:app"
+[tool.fastapi]
+entrypoint = "app.main:app"
 
 # timezone to use when rendering the date within the migration file
 # as well as the filename.

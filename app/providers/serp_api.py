@@ -5,10 +5,10 @@ import json
 from dotenv import load_dotenv
 from dateutil import tz
 from datetime import datetime
-from ..database.crud import save_organic_results
-from ..models import ServiceEnum
-from ..providers.services import get_api_key
-from ..providers.config import mr, bus, duns, mr_keywords, \
+from app.database.crud import save_organic_results
+from app.models import ServiceEnum
+from app.providers.services import get_api_key
+from app.providers.config import mr, bus, duns, mr_keywords, \
     mr_upholstery_keys, bus_keywords, bus_upholstery_keys, \
     duns_keywords, duns_upholstery_keys, \
     mr_tiles, bus_tiles, duns_tiles, \
@@ -141,7 +141,7 @@ async def save_all_concurrently():
     Must be done in batches to avoid rate limit."""
     print('===================================')
     print("Note: This will consume 179 out of 250 searches on SerpApi")
-    """
+    
     # Carpet - Batch 1
     await asyncio.gather(
         fetch_and_save(mr, mr_keywords, ServiceEnum.carpet),
@@ -168,7 +168,6 @@ async def save_all_concurrently():
     )
 
     await asyncio.sleep(2)
-    """
 
     # Curtains
     await asyncio.gather(

@@ -1,5 +1,5 @@
-from ..db import async_session
-from ..models import Location, Keyword, OrganicRank, ServiceEnum, LocationEnum
+from app.db import async_session
+from app.models import Location, Keyword, OrganicRank, ServiceEnum, LocationEnum
 
 
 from sqlmodel import select
