@@ -1,0 +1,13 @@
+alembic==1.18.4
+backend==0.2.4.1
+fastapi==0.135.3
+plotly==5.14.1
+polars==1.39.3
+pydantic==2.13.1
+pytest==9.0.3
+python-dotenv==1.2.2
+python_dateutil==2.8.2
+python_dateutil==2.9.0.post0
+serpapi==1.0.2
+SQLAlchemy==2.0.49
+sqlmodel==0.0.38
