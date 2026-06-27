@@ -9,7 +9,6 @@ from backend.app.modules.seo.queries import fetch_ranked_and_unranked_data
 from backend.app.modules.seo.services import get_earliest_ids, \
     get_recently_ranked_keyword
 
-from backend.app.models import LocationEnum, ServiceEnum
 import asyncio
 import plotly.graph_objects as go
 import pprint
@@ -82,11 +81,11 @@ def plot_lines_markers_ranked(
             # Filter data for specific keyword on each iteration
             keyword_data = df.filter(pl.col('keyword') == keyword)
             fig.add_trace(go.Scatter(
-                x=keyword_data['date'],
-                y=keyword_data['position'],
+                x=keyword_data['date'].to_list(),  # Converts to list as plotly doesnt take polars series
+                y=keyword_data['position'].to_list(),
                 mode='lines+markers',
                 name=keyword,
-                legend='legend',
+                legendgroup='legend',
                 showlegend=True,
                 marker=dict(
                     size=9
@@ -108,7 +107,7 @@ def plot_lines_markers_ranked(
                     y=[11],
                     mode='markers',
                     name=keyword,
-                    legend='legend11',
+                    legendgroup='legend11',
                     showlegend=True,
 
                     marker=dict(
@@ -137,7 +136,7 @@ def plot_lines_markers_ranked(
                     y=[11],
                     mode='markers',
                     name=keyword,
-                    legend='legend2',
+                    legendgroup='legend2',
                     showlegend=True,
 
                     marker=dict(
@@ -162,7 +161,7 @@ def plot_lines_markers_ranked(
                 y=[11],
                 mode='markers',
                 name=keywords,
-                legend='legend3',
+                legendgroup='legend3',
                 showlegend=True,
                 marker=dict(
                     color='Green',
@@ -190,7 +189,6 @@ def update_fig_layout(fig: go.Figure) -> go.Figure:
         #autorange='reversed',   # set Y axis to descending order
         tickformat='d',         # Format as integers (no decimals)
         dtick=1,                # Show tick every 1 unit (optional but ensures integer spacing)
-
         )
 
         fig.update_layout(
@@ -215,7 +213,7 @@ def update_fig_layout(fig: go.Figure) -> go.Figure:
                 x=1.02,
                 xanchor='left',
             ),
-
+            
             legend11=dict(
                 title=dict(
                     text='Dropped out of Top 10',

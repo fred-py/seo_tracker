@@ -13,6 +13,15 @@ async def run_ranking_analysis(search_param: SearchItems):
     ranked, unranked and dropped keywords.
     All the above data is contained within the
     response variable.
+
+    Test router with the following: 
+    
+    {
+      "location": "Margaret River, Western Australia, Australia",
+      "service": "carpet",
+      "url": "https://unitedpropertyservices.au/"
+    }
+  
     """
     response = await fetch_ranked_and_unranked_data(
             search_param.location,
@@ -21,10 +30,3 @@ async def run_ranking_analysis(search_param: SearchItems):
     )
     return response
 
-"""
-{
-  "location": "Margaret River, Western Australia, Australia",
-  "service": "carpet",
-  "url": "https://unitedpropertyservices.au/"
-}
-"""
