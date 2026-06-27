@@ -320,6 +320,40 @@ async def fetch_ranked_and_unranked_data(location: str, service: str, url: str):
     }
 
 
+async def get_service_location_check_dates(location: str, service: str):
+    """Returns service and location ranking check dates
+        
+        Arg: location and service as strings
+        output: list of dictionaries
+    """
+    async with async_session() as session:
+        try:
+            statement = (
+                select(OrganicRank, Keyword, Location)
+                .join(Keyword, OrganicRank.keyword_id == Keyword.id)
+                .join(Location, Keyword.location_id == Location.id)
+                .where(Keyword.service == service)
+                .where(Location.location == location)
+            )
+
+            obj = await session.exec(statement)
+
+            data = []
+            for organic_rank, keyword, location_obj in obj:
+                d = {
+                    "location": location_obj.location,
+                    "title": organic_rank.title,
+                    "date": organic_rank.checked_date,
+                    "keyword_id": keyword.id,
+                }
+                data.append(d)
+            return data
+        except Exception as e:
+            print(e)
+
+
+
+
 async def add_or_update_service():
     async with async_session() as session:
         statement = (

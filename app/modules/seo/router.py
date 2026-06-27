@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends
-from .queries import fetch_ranked_and_unranked_data
-from .models import SearchItems
+from .queries import fetch_ranked_and_unranked_data, get_service_location_check_dates
+from .models import SearchItems, CheckDate
 
 
 router = APIRouter()
 
 
 @router.post('/fetch_all/', tags=['fetch_all'])
-async def run_ranking_analysis(search_param: SearchItems):
+async def get_ranking_data(search_param: SearchItems):
     """
     Retrieves 3 sets of data;
     ranked, unranked and dropped keywords.
@@ -23,10 +23,24 @@ async def run_ranking_analysis(search_param: SearchItems):
     }
   
     """
-    response = await fetch_ranked_and_unranked_data(
-            search_param.location,
-            search_param.service,
-            search_param.url
-    )
-    return response
+    try:
+        response = await fetch_ranked_and_unranked_data(
+              search_param.location,
+              search_param.service,
+              search_param.url
+        )
+        return response
+    except Exception as e:
+        return {'error': str(e), 'status': 500}
 
+
+@router.post('/get_dates', tags=['get_dates'])
+async def get_checked_dates(check_date_param: CheckDate):
+    try:
+        response = await get_service_location_check_dates(
+              check_date_param.location,
+              check_date_param.service,
+        )
+        return response
+    except Exception as e:
+        return {'error': str(e), 'status': 500}
