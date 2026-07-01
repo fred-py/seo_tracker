@@ -349,7 +349,7 @@ async def get_service_location_check_dates(location: str, service: str):
             data_obj = []
             data = []
             for organic_rank, keyword, location_obj in obj:
-                keyword_ids.add(keyword.id)
+                
                 checked_date = organic_rank.checked_date
                 d = {
                     "location": location_obj.location,
@@ -365,22 +365,23 @@ async def get_service_location_check_dates(location: str, service: str):
 
             latest_date = max(dates)
             print(latest_date)
-
+            print(keyword_ids)
             for x in data_obj:
                 if x['date'] == latest_date:
-                    y = {
-                            "location": x["location"],
-                            "service": x["service"],
-                            "keyword": x["keyword"],
-                            "date": x["date"],
-                            "keyword_id": x["keyword_id"],
-                        }
-                    data.append(y)
+                    if x['keyword_id'] not in keyword_ids:
+                        y = {
+                                "location": x["location"],
+                                "service": x["service"],
+                                "keyword": x["keyword"],
+                                "date": x["date"],
+                                "keyword_id": x["keyword_id"],
+                            }
+                        # Prevents duplicates
+                        keyword_ids.add(x['keyword_id'])
+                        data.append(y)
             return data
         except Exception as e:
             print(e)
-
-
 
 
 async def add_or_update_service():
