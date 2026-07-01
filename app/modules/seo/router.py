@@ -36,6 +36,21 @@ async def get_ranking_data(search_param: SearchItems):
 
 @router.post('/get_dates', tags=['get_dates'])
 async def get_checked_dates(check_date_param: CheckDate):
+    """
+    This router is used to check when the latest ranking
+    data was saved to the database.
+
+    Returns service and location ranking check dates
+
+    Arg: location and service as strings
+    Output: list of dictionaries
+
+    Testing on browser:
+    {
+      "location": "Margaret River, Western Australia, Australia",
+      "service": "carpet"
+    }
+    """
     try:
         response = await get_service_location_check_dates(
               check_date_param.location,

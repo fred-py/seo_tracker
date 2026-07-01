@@ -324,7 +324,14 @@ async def get_service_location_check_dates(location: str, service: str):
     """Returns service and location ranking check dates
         
         Arg: location and service as strings
-        output: list of dictionaries
+        Output: list of dictionaries
+
+        Testing on browser:
+            {
+                "location": "Margaret River, Western Australia, Australia",
+                "service": "carpet"
+            }
+
     """
     async with async_session() as session:
         try:
@@ -337,16 +344,38 @@ async def get_service_location_check_dates(location: str, service: str):
             )
 
             obj = await session.exec(statement)
-
+            keyword_ids = set() # Using set to avoid duplicates
+            dates = []
+            data_obj = []
             data = []
             for organic_rank, keyword, location_obj in obj:
+                keyword_ids.add(keyword.id)
+                checked_date = organic_rank.checked_date
                 d = {
                     "location": location_obj.location,
-                    "title": organic_rank.title,
-                    "date": organic_rank.checked_date,
+                    "service": keyword.service,
+                    "keyword": keyword.keywords,
+                    "date": checked_date,
                     "keyword_id": keyword.id,
                 }
-                data.append(d)
+                data_obj.append(d)
+
+                if checked_date not in dates:
+                    dates.append(checked_date)
+
+            latest_date = max(dates)
+            print(latest_date)
+
+            for x in data_obj:
+                if x['date'] == latest_date:
+                    y = {
+                            "location": x["location"],
+                            "service": x["service"],
+                            "keyword": x["keyword"],
+                            "date": x["date"],
+                            "keyword_id": x["keyword_id"],
+                        }
+                    data.append(y)
             return data
         except Exception as e:
             print(e)
