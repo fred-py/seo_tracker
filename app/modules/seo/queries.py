@@ -321,7 +321,7 @@ async def fetch_ranked_and_unranked_data(location: str, service: str, url: str):
 
 
 async def get_service_location_check_dates(location: str, service: str):
-    """Returns service and location ranking check dates
+    """Returns service, location and keyword ranking check dates
         
         Arg: location and service as strings
         Output: list of dictionaries
@@ -364,8 +364,8 @@ async def get_service_location_check_dates(location: str, service: str):
                     dates.append(checked_date)
 
             latest_date = max(dates)
-            print(latest_date)
-            print(keyword_ids)
+
+            
             for x in data_obj:
                 if x['date'] == latest_date:
                     if x['keyword_id'] not in keyword_ids:
