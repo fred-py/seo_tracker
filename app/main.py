@@ -1,5 +1,6 @@
 from fastapi import Depends, FastAPI
 from fastapi.responses import RedirectResponse
+from fastapi.middleware.cors import CORSMiddleware
 #from openai import OpenAI
 #from .db import init_db
 from .modules.seo.router import router as seo_router
@@ -8,10 +9,21 @@ import os
 
 load_dotenv()
 
-
 app = FastAPI()
 #openai_client = OpenAI(api_key=os.getenv('OPEN_AI_KEY'))
 
+origins = [
+    "http://localhost:5173",  # React development server
+    "http://localhost",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(seo_router)
 

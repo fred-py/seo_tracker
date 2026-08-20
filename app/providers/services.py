@@ -32,7 +32,7 @@ def check_searches_left(key) -> bool:
         r = httpx.get(f'https://serpapi.com/account?api_key={key}')
         s = r.json()
         searches_left = s['total_searches_left']
-        if searches_left > 179:
+        if searches_left > 1:
             return True
     except Exception as e:
         print(f'Error running check_searches_left() =>> {e}')

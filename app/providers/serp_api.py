@@ -148,6 +148,7 @@ async def save_all_concurrently():
         fetch_and_save(bus, bus_keywords, ServiceEnum.carpet),
         fetch_and_save(duns, duns_keywords, ServiceEnum.carpet),
     )
+    
     #  Add delay between batches
     await asyncio.sleep(2)
 
@@ -176,6 +177,8 @@ async def save_all_concurrently():
         fetch_and_save(duns, duns_curtains, ServiceEnum.curtains),
     )
 
+    await asyncio.sleep(2)
+
     # Leather
     await asyncio.gather(
         fetch_and_save(mr, mr_leather, ServiceEnum.leather),
@@ -183,12 +186,15 @@ async def save_all_concurrently():
         fetch_and_save(duns, duns_leather, ServiceEnum.leather),
     )
 
+    await asyncio.sleep(2)
+
     # Water Damage & Restoration
     await asyncio.gather(
         fetch_and_save(mr, mr_water, ServiceEnum.water_damage),
         fetch_and_save(bus, bus_water, ServiceEnum.water_damage),
         fetch_and_save(duns, duns_water, ServiceEnum.water_damage),
     )
+    
 
 
 if __name__ == '__main__':

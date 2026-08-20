@@ -63,6 +63,7 @@ async def get_url_rank_by_service_location(
 
         Link row contains the full url eg. https://unitedpropertyservices.au/
     """
+    
     async with async_session() as session:
         try:
             statement = (

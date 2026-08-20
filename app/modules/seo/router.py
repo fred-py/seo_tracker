@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
-from .queries import fetch_ranked_and_unranked_data, get_service_location_check_dates
+from .queries import fetch_ranked_and_unranked_data, \
+  get_service_location_check_dates
 from .models import SearchItems, CheckDate
 
 
