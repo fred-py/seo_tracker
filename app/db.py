@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from sqlmodel import SQLModel
+from sqlmodel import SQLModel, Session
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from sqlalchemy.ext.asyncio import create_async_engine
@@ -54,6 +54,7 @@ async def get_session() -> AsyncSession:
     """
     async with async_session() as session:
         yield session
+
 
 # NOTE: Alembic is setup to handle database. 
 # init_db no longer needed.

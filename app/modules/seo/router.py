@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from .queries import fetch_ranked_and_unranked_data, \
-  get_service_location_check_dates
+  get_service_location_check_dates, get_services
 from .models import SearchItems, CheckDate
 
 
@@ -22,7 +22,7 @@ async def get_ranking_data(search_param: SearchItems):
       "service": "carpet",
       "url": "https://unitedpropertyservices.au/"
     }
-  
+
     """
     try:
         response = await fetch_ranked_and_unranked_data(
@@ -34,6 +34,11 @@ async def get_ranking_data(search_param: SearchItems):
     except Exception as e:
         return {'error': str(e), 'status': 500}
 
+
+@router.get('/services', tags=['get_services'])
+async def fetch_services_locations():
+    response = await get_services()
+    return response
 
 @router.post('/get_dates', tags=['get_dates'])
 async def get_checked_dates(check_date_param: CheckDate):

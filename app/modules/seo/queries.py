@@ -10,88 +10,12 @@ import pprint
 import polars as pl
 
 
-async def get_keyword(keyword_text):
+async def get_services() -> list[Keyword]:
     async with async_session() as session:
-        statement = select(Keyword).where(Keyword.keywords == keyword_text)
+        statement = select(Locationlocation)
         result = await session.exec(statement)
-    return result.first()
-
-
-async def get_rankings(
-        city: str | None,
-        keyword_text: str | None = None) -> list[dict]:
-    """
-        Arg:
-        Optional city and keywords argument
-    """
-    async with async_session() as session:
-        statement = (
-            select(Location, Keyword, OrganicRank)
-            .join(Location, Keyword.location_id == Location.id)
-            #.join(Keyword, OrganicRank.keyword_id == Keyword.id)
-        )
-        if city:
-            statement = statement.where(Location.location == city)
-        if keyword_text:
-            statement = statement.where(
-                Keyword.keywords.ilike(f'%{keyword_text}%'))
-
-        results = await session.exec(statement)
-        for location, keyword, organic_rank in results:
-            data = {
-                "location_id": location.id,
-                "keyword": keyword.keywords,
-                "position": organic_rank.position,
-                "keyword_id": keyword.id,
-                "location": location.location,
-                "date": keyword.created_date,
-            }
-            print(data)
-
-
-async def get_url_rank_by_service_location(
-        location: str,
-        service: str,
-        link_url: str) -> OrganicRank:
-    """
-        Retrieves rank for single url
-
-        Arg:
-        location: must match exact string already in the database
-        service: must match exact string already in the database
-        url: to be retrieved from the database.
-
-        Link row contains the full url eg. https://unitedpropertyservices.au/
-    """
-    
-    async with async_session() as session:
-        try:
-            statement = (
-                select(OrganicRank, Keyword, Location)
-                .join(Keyword, OrganicRank.keyword_id == Keyword.id)
-                .join(Location, Keyword.location_id == Location.id)
-                .where(Keyword.service == service)
-                .where(Location.location == location)
-                .where(OrganicRank.link == link_url)
-            )
-            results = await session.exec(statement)
-            data = []
-            for organic_rank, keyword, location_obj in results:
-                d = {
-                    "location": location_obj.location,
-                    "service": keyword.service,
-                    "id": keyword.id,
-                    "keyword": keyword.keywords,
-                    "position": organic_rank.position,
-                    "title": organic_rank.title,
-                    "source": organic_rank.source,
-                    "link": organic_rank.link,
-                    "date": organic_rank.checked_date,
-                }
-                data.append(d)
-            return data
-        except Exception as e:
-            print(e)
+        r = result.all()
+    return r
 
 
 async def get_domain_rank_by_service_location(
@@ -322,7 +246,8 @@ async def fetch_ranked_and_unranked_data(location: str, service: str, url: str):
 
 
 async def get_service_location_check_dates(location: str, service: str):
-    """Returns service, location and keyword ranking check dates
+    """Returns service, location and keyword ranking
+        latest check dates
         
         Arg: location and service as strings
         Output: list of dictionaries
@@ -366,7 +291,6 @@ async def get_service_location_check_dates(location: str, service: str):
 
             latest_date = max(dates)
 
-            
             for x in data_obj:
                 if x['date'] == latest_date:
                     if x['keyword_id'] not in keyword_ids:
@@ -397,76 +321,78 @@ async def add_or_update_service():
         pprint.pprint(location)
 
 
-async def check_key_words():
+async def get_url_rank_by_service_location(
+        location: str,
+        service: str,
+        link_url: str) -> OrganicRank:
+    """
+        Retrieves rank for single url
+
+        Arg:
+        location: must match exact string already in the database
+        service: must match exact string already in the database
+        url: to be retrieved from the database.
+
+        Link row contains the full url eg. https://unitedpropertyservices.au/
+    """
+    
+    async with async_session() as session:
+        try:
+            statement = (
+                select(OrganicRank, Keyword, Location)
+                .join(Keyword, OrganicRank.keyword_id == Keyword.id)
+                .join(Location, Keyword.location_id == Location.id)
+                .where(Keyword.service == service)
+                .where(Location.location == location)
+                .where(OrganicRank.link == link_url)
+            )
+            results = await session.exec(statement)
+            data = []
+            for organic_rank, keyword, location_obj in results:
+                d = {
+                    "location": location_obj.location,
+                    "service": keyword.service,
+                    "id": keyword.id,
+                    "keyword": keyword.keywords,
+                    "position": organic_rank.position,
+                    "title": organic_rank.title,
+                    "source": organic_rank.source,
+                    "link": organic_rank.link,
+                    "date": organic_rank.checked_date,
+                }
+                data.append(d)
+            return data
+        except Exception as e:
+            print(e)
+
+
+async def get_rankings(
+        city: str | None,
+        keyword_text: str | None = None) -> list[dict]:
+    """
+        Arg:
+        Optional city and keywords argument
+    """
     async with async_session() as session:
         statement = (
-            select(Keyword)
+            select(Location, Keyword, OrganicRank)
+            .join(Location, Keyword.location_id == Location.id)
+            #.join(Keyword, OrganicRank.keyword_id == Keyword.id)
         )
+        if city:
+            statement = statement.where(Location.location == city)
+        if keyword_text:
+            statement = statement.where(
+                Keyword.keywords.ilike(f'%{keyword_text}%'))
 
         results = await session.exec(statement)
-        #location = results.all()  # .all() sqlmodel method
-        for keys in results:
-            print(keys)
-
-
-
-
-# TESTING
-async def run_all_queries():
-    """Run all queries in a single event loop"""
-    
-    # Run first query
-    ranked_results = await get_domain_rank_by_service_location(
-        LocationEnum.duns,
-        ServiceEnum.tile_grout,
-        domain='unitedpropertyservices.au'
-    )
-    print("Ranked Results:")
-    pprint.pprint(ranked_results)
-    print("###########################################")
-
-    # Save to CSV
-    if ranked_results:
-        df_ranked = pl.DataFrame(ranked_results)
-        df_ranked.write_csv("ranked_results.csv")
-        print(f"✅ Saved {len(df_ranked)} ranked results to ranked_results.csv")
-
-    # Run second query
-    unranked_results = await find_unranked_keywords(
-        LocationEnum.duns,
-        ServiceEnum.tile_grout,
-        domain='unitedpropertyservices.au'
-    )
-    print("Unranked Results:")
-    pprint.pprint(unranked_results)
-    print("###########################################")
-
-    # Save to CSV
-    if unranked_results:
-        df_unranked = pl.DataFrame(unranked_results)
-        df_unranked.write_csv("unranked_keywords.csv")
-        print(f"✅ Saved {len(df_unranked)} unranked keywords to unranked_keywords.csv")
-
-
-def main():
-    """
-    Enables running/testing functions
-    as a module
-    """
-
-    #asyncio.run(run_all_queries())
-    
-
-if __name__ == "__main__":
-    
-    #'https://unitedpropertyservices.au/carpet-cleaning-busselton-margaret-river/'
-    #data = asyncio.run(get_url_rank_by_service_location(
-    #    LocationEnum.duns,
-    #    ServiceEnum.carpet,
-        #'https://unitedpropertyservices.au/carpet-cleaning-busselton-margaret-river/'
-    #    'https://unitedpropertyservices.au/' 
-    #    ,)
-    #)
-    unranked = asyncio.run(find_unranked_keywords(LocationEnum.duns, ServiceEnum.carpet))
-    
-    pprint.pprint(unranked)
+        for location, keyword, organic_rank in results:
+            data = {
+                "location_id": location.id,
+                "keyword": keyword.keywords,
+                "position": organic_rank.position,
+                "keyword_id": keyword.id,
+                "location": location.location,
+                "date": keyword.created_date,
+            }
+            print(data)
