@@ -1,21 +1,33 @@
 from app.db import async_session
-from app.models import Location, Keyword, OrganicRank, ServiceEnum, LocationEnum
-
+from app.models import \
+    Location, Keyword, OrganicRank, \
+    ServiceEnum, LocationEnum
 from sqlmodel import select
-
 import asyncio
-
 import pprint
 
-import polars as pl
 
+async def get_services() -> list:
+    """Retrieves services and location values"""
+    try:
+        async with async_session() as session:
+            statement = (
+                select(Location.location, Keyword.service)
+                .join(Location, Keyword.location_id == Location.id)
+            )
+            result = await session.exec(statement)
 
-async def get_services() -> list[Keyword]:
-    async with async_session() as session:
-        statement = select(Locationlocation)
-        result = await session.exec(statement)
-        r = result.all()
-    return r
+            # Use set() to get unique values
+            location = set()
+            services = set()
+            for loc, ser in result:
+                location.add(loc)
+                services.add(ser)
+        return location, services
+
+    except Exception as e:
+        print(f'Error === {e}')
+        raise e
 
 
 async def get_domain_rank_by_service_location(
