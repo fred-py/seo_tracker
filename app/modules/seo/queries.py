@@ -21,9 +21,16 @@ async def get_services() -> list:
             location = set()
             services = set()
             for loc, ser in result:
+                ser.replace('_', '')  # remove all underscores eg. tile_grout
                 location.add(loc)
                 services.add(ser)
-        return location, services
+
+            remove_underscore = [u.replace('_', ' ') for u in services]
+    
+        return {
+            'location': location,
+            'services': remove_underscore,
+        }
 
     except Exception as e:
         print(f'Error === {e}')

@@ -35,7 +35,7 @@ async def get_ranking_data(search_param: SearchItems):
         return {'error': str(e), 'status': 500}
 
 
-@router.get('/services/location/', tags=['services-locatio'])
+@router.get('/services/location/', tags=['services-location'])
 async def fetch_services_locations():
     response = await get_services()
     return response
