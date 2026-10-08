@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from .queries import fetch_ranked_and_unranked_data, \
-  get_service_location_check_dates, get_services
+  get_service_location_check_dates, get_services, \
+  get_latest_organic_search_date
 from .models import SearchItems, CheckDate
 
 
@@ -40,7 +41,17 @@ async def fetch_services_locations():
     response = await get_services()
     return response
 
-@router.post('/get_dates', tags=['get_dates'])
+
+@router.post('/get/latest/search/date', tags=['latest-search-date'])
+async def fetch_organic_ranking():
+    try:
+        response = await get_latest_organic_search_date()
+        return response
+    except Exception as e:
+        return {'error': str(e), 'status': 500}
+
+
+@router.post('/get-dates', tags=['get_dates'])
 async def get_checked_dates(check_date_param: CheckDate):
     """
     This router is used to check when the latest ranking

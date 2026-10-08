@@ -142,7 +142,7 @@ async def save_organic_results(
         except Exception as e:
             print(type(e))
             print(repr(e))
-            print(f'Error => {e}')
+            raise f'Error on save_organic_results => {e}'
 
 
 async def get_keywords_by_location_service(

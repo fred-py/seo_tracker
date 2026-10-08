@@ -1,6 +1,7 @@
 from serpapi.google_search import GoogleSearch
 import pprint
 import os
+import time
 import json
 from dotenv import load_dotenv
 from dateutil import tz
@@ -64,28 +65,36 @@ class GetGoogleResults:
 
     def get_organic_results(self, raw_data, keyword) -> dict:
         results = raw_data.get_dict()
-        print(results)
-        organic_results = results['organic_results']
-        #pprint.pprint(f'Organic results for {self.q} in {self.location}')
-        data_dict = {
-            'location': self.location,
-            'keyword': keyword,
-            'checked_date': date,
-            'rank': [],
-        }
-        try:
-            for r in organic_results:
-                data = {
-                    'title': r['title'],
-                    'source': r['source'],
-                    'position': r['position'],
-                    'link': r['link']
+        max_retries = 4
+        for attempt in range(max_retries):
+            try:
+                organic_results = results['organic_results']
+                data_dict = {
+                    'location': self.location,
+                    'keyword': keyword,
+                    'checked_date': date,
+                    'rank': [],
                 }
-                data_dict['rank'].append(data)
-                #print(data)
-            return data_dict
-        except TypeError as e:
-            return e
+                try:
+                    for r in organic_results:
+                        data = {
+                            'title': r['title'],
+                            'source': r['source'],
+                            'position': r['position'],
+                            'link': r['link']
+                        }
+                        data_dict['rank'].append(data)
+                    return data_dict
+                except TypeError as e:
+                    return e
+            except TimeoutError:
+                if attempt < max_retries - 1:
+                    time.sleep(4)
+                    continue
+            raise TimeoutError(
+                f"ERROR ========= \
+                    Location:{self.location} \
+                    KeywordL{keyword}")
 
     def get_maps_results(self, raw_data) -> dict:
 
@@ -141,40 +150,41 @@ async def save_all_concurrently():
     Must be done in batches to avoid rate limit."""
     print('===================================')
     print("Note: This will consume 179 out of 250 searches on SerpApi")
-    
+   
     # Carpet - Batch 1
     await asyncio.gather(
         fetch_and_save(mr, mr_keywords, ServiceEnum.carpet),
         fetch_and_save(bus, bus_keywords, ServiceEnum.carpet),
-        fetch_and_save(duns, duns_keywords, ServiceEnum.carpet),
+        #fetch_and_save(duns, duns_keywords, ServiceEnum.carpet),
     )
-    
+
     #  Add delay between batches
     await asyncio.sleep(2)
 
     # Upholstery
     await asyncio.gather(
-        fetch_and_save(mr, mr_upholstery_keys, ServiceEnum.upholstery),
+        #fetch_and_save(mr, mr_upholstery_keys, ServiceEnum.upholstery),
         fetch_and_save(bus, bus_upholstery_keys, ServiceEnum.upholstery),
-        fetch_and_save(duns, duns_upholstery_keys, ServiceEnum.upholstery),
+        #fetch_and_save(duns, duns_upholstery_keys, ServiceEnum.upholstery),
     )
-
+    
     await asyncio.sleep(2)
+    
 
     # Tiles
     await asyncio.gather(
-        fetch_and_save(mr, mr_tiles, ServiceEnum.tile_grout),
-        fetch_and_save(bus, bus_tiles, ServiceEnum.tile_grout),
+        #fetch_and_save(mr, mr_tiles, ServiceEnum.tile_grout),
+        #fetch_and_save(bus, bus_tiles, ServiceEnum.tile_grout),
         fetch_and_save(duns, duns_tiles, ServiceEnum.tile_grout),
     )
-
+    
     await asyncio.sleep(2)
 
     # Curtains
     await asyncio.gather(
         fetch_and_save(mr, mr_curtains, ServiceEnum.curtains),
-        fetch_and_save(bus, bus_curtains, ServiceEnum.curtains),
-        fetch_and_save(duns, duns_curtains, ServiceEnum.curtains),
+        #fetch_and_save(bus, bus_curtains, ServiceEnum.curtains),
+        #fetch_and_save(duns, duns_curtains, ServiceEnum.curtains),
     )
 
     await asyncio.sleep(2)
@@ -185,17 +195,16 @@ async def save_all_concurrently():
         fetch_and_save(bus, bus_leather, ServiceEnum.leather),
         fetch_and_save(duns, duns_leather, ServiceEnum.leather),
     )
-
+    
     await asyncio.sleep(2)
-
+    """
     # Water Damage & Restoration
     await asyncio.gather(
         fetch_and_save(mr, mr_water, ServiceEnum.water_damage),
         fetch_and_save(bus, bus_water, ServiceEnum.water_damage),
         fetch_and_save(duns, duns_water, ServiceEnum.water_damage),
     )
+    """
     
-
-
 if __name__ == '__main__':
     asyncio.run(save_all_concurrently())

@@ -2,7 +2,9 @@ from app.db import async_session
 from app.models import \
     Location, Keyword, OrganicRank, \
     ServiceEnum, LocationEnum
-from sqlmodel import select
+
+from sqlmodel import select 
+from sqlalchemy import func
 import asyncio
 import pprint
 
@@ -84,6 +86,49 @@ async def get_domain_rank_by_service_location(
             return data
         except Exception as e:
             print(e)
+
+
+async def get_latest_organic_search_date(domain=None):
+    """
+    Returns latest search date grouped by service
+    and location.
+
+    Output: Dictionary
+
+    Param: optional defaults to unitedpropertyservices.au
+    """
+    if domain is None:
+        domain = "unitedpropertyservices.au"  # Defaults to united domain
+
+    async with async_session() as session:
+        try:
+            statement = (
+                select(
+                    Location.location,
+                    Keyword.service,
+                    func.max(OrganicRank.checked_date).label('latest_date')
+                )
+                .join(Keyword, OrganicRank.keyword_id == Keyword.id)
+                .join(Location, Keyword.location_id == Location.id)
+                .where(OrganicRank.source == domain)
+                .group_by(Location.location, Keyword.service)
+                .order_by(Keyword.service)
+                .order_by(func.max(OrganicRank.checked_date).desc())
+            )
+            results = await session.exec(statement)
+            r = results.all()
+            # Convert tuples to dicts
+            data = [
+                {
+                    "location": row[0],
+                    "service": row[1],
+                    "latest_date": row[2]
+                }
+                for row in r
+            ]
+            return data
+        except Exception:
+            raise
 
 
 async def find_never_ranked_keywords(
