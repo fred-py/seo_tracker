@@ -3,6 +3,7 @@ import pprint
 import os
 import time
 import json
+from app.logs.logging_config import get_logger
 from dotenv import load_dotenv
 from dateutil import tz
 from datetime import datetime
@@ -18,6 +19,8 @@ from app.providers.config import mr, bus, duns, mr_keywords, \
     mr_water, bus_water, duns_water
 
 import asyncio
+
+logger = get_logger(__name__)
 
 load_dotenv()
 api_key = os.getenv('API_KEY')
@@ -65,36 +68,34 @@ class GetGoogleResults:
 
     def get_organic_results(self, raw_data, keyword) -> dict:
         results = raw_data.get_dict()
-        max_retries = 4
-        for attempt in range(max_retries):
+        logger.info(f'SERPAPI raw data lenght: {len(results)}')
+        try:
+            organic_results = results['organic_results']
+            data_dict = {
+                'location': self.location,
+                'keyword': keyword,
+                'checked_date': date,
+                'rank': [],
+            }
             try:
-                organic_results = results['organic_results']
-                data_dict = {
-                    'location': self.location,
-                    'keyword': keyword,
-                    'checked_date': date,
-                    'rank': [],
-                }
-                try:
-                    for r in organic_results:
-                        data = {
-                            'title': r['title'],
-                            'source': r['source'],
-                            'position': r['position'],
-                            'link': r['link']
-                        }
-                        data_dict['rank'].append(data)
-                    return data_dict
-                except TypeError as e:
-                    return e
-            except TimeoutError:
-                if attempt < max_retries - 1:
-                    time.sleep(4)
-                    continue
-            raise TimeoutError(
-                f"ERROR ========= \
-                    Location:{self.location} \
-                    KeywordL{keyword}")
+                for r in organic_results:
+                    data = {
+                        'title': r['title'],
+                        'source': r['source'],
+                        'position': r['position'],
+                        'link': r['link']
+                    }
+                    data_dict['rank'].append(data)
+                return data_dict
+            except TypeError as e:
+                return e
+        except KeyError as e:
+            logger.debug(f'Unable to set organic_results variable \
+                            Error: {e}')
+            raise e
+        except Exception as e:
+            logger.critical(f'Unexpected error: {e}')
+            raise e
 
     def get_maps_results(self, raw_data) -> dict:
 
@@ -137,9 +138,20 @@ async def fetch_and_save(
 
     for keyword in keywords:
         params = set_location.set_organic_params(keyword, key)
-        raw = GoogleSearch(params)
-        data = set_location.get_organic_results(raw, keyword)
-        data_list.append(data)
+
+        max_retries = 4
+        for attempt in range(max_retries):
+            try:
+                raw = GoogleSearch(params)
+                data = set_location.get_organic_results(raw, keyword)   
+                data_list.append(data)
+                break  # Exit retry loop 
+            except TimeoutError:
+                if attempt < max_retries - 1:
+                    time.sleep(4)
+                    continue
+                logger.debug(f"Failed after {max_retries} attempts")
+                raise
 
     await save_organic_results(data_list, service=service)
 
@@ -150,17 +162,18 @@ async def save_all_concurrently():
     Must be done in batches to avoid rate limit."""
     print('===================================')
     print("Note: This will consume 179 out of 250 searches on SerpApi")
-   
+    """
     # Carpet - Batch 1
     await asyncio.gather(
-        fetch_and_save(mr, mr_keywords, ServiceEnum.carpet),
-        fetch_and_save(bus, bus_keywords, ServiceEnum.carpet),
+        #fetch_and_save(mr, mr_keywords, ServiceEnum.carpet),
+        #fetch_and_save(bus, bus_keywords, ServiceEnum.carpet),
         #fetch_and_save(duns, duns_keywords, ServiceEnum.carpet),
     )
 
     #  Add delay between batches
     await asyncio.sleep(2)
 
+    
     # Upholstery
     await asyncio.gather(
         #fetch_and_save(mr, mr_upholstery_keys, ServiceEnum.upholstery),
@@ -170,7 +183,7 @@ async def save_all_concurrently():
     
     await asyncio.sleep(2)
     
-
+    
     # Tiles
     await asyncio.gather(
         #fetch_and_save(mr, mr_tiles, ServiceEnum.tile_grout),
@@ -179,13 +192,14 @@ async def save_all_concurrently():
     )
     
     await asyncio.sleep(2)
-
+    
     # Curtains
     await asyncio.gather(
         fetch_and_save(mr, mr_curtains, ServiceEnum.curtains),
         #fetch_and_save(bus, bus_curtains, ServiceEnum.curtains),
         #fetch_and_save(duns, duns_curtains, ServiceEnum.curtains),
     )
+    """
 
     await asyncio.sleep(2)
 
@@ -205,6 +219,6 @@ async def save_all_concurrently():
         fetch_and_save(duns, duns_water, ServiceEnum.water_damage),
     )
     """
-    
+
 if __name__ == '__main__':
     asyncio.run(save_all_concurrently())

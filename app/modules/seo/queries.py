@@ -3,14 +3,18 @@ from app.models import \
     Location, Keyword, OrganicRank, \
     ServiceEnum, LocationEnum
 
+from app.logs.logging_config import get_logger
 from sqlmodel import select 
 from sqlalchemy import func
 import asyncio
 import pprint
 
+logger = get_logger(__name__)
+
 
 async def get_services() -> list:
     """Retrieves services and location values"""
+    logger.info('Fetching results for services and locations')
     try:
         async with async_session() as session:
             statement = (
@@ -26,13 +30,19 @@ async def get_services() -> list:
                 location.add(loc)
                 services.add(ser)
 
+        logger.info(
+            f'API returned location: {len(location)}  \
+            and  service: {len(services)}'
+        )
         return {
             'location': location,
             'services': services,
         }
 
     except Exception as e:
-        print(f'Error === {e}')
+        logger.debug(
+            f'Unable to retrive services and location values:{e}'
+        )
         raise e
 
 
@@ -99,7 +109,7 @@ async def get_latest_organic_search_date(domain=None):
     """
     if domain is None:
         domain = "unitedpropertyservices.au"  # Defaults to united domain
-
+    logger.info('Fetching latest organic search date')
     async with async_session() as session:
         try:
             statement = (
@@ -120,15 +130,18 @@ async def get_latest_organic_search_date(domain=None):
             # Convert tuples to dicts
             data = [
                 {
-                    "location": row[0],
-                    "service": row[1],
-                    "latest_date": row[2]
+                    'location': row[0],
+                    'service': row[1],
+                    'latest_date': row[2]
                 }
                 for row in r
             ]
+            logger.info(f'API returned output: {len(data)}')
+
             return data
-        except Exception:
-            raise
+        except Exception as e:
+            logger.debug(f'Error retrieving latest organic search date: {e}')
+            raise e
 
 
 async def find_never_ranked_keywords(

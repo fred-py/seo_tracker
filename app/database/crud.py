@@ -1,12 +1,15 @@
 from app.db import async_session
 from app.models import Location, Keyword, OrganicRank, ServiceEnum, LocationEnum
-
+from app.logs.logging_config import get_logger
 
 from sqlmodel import select
 
 import asyncio
 
 import pprint
+
+
+logger = get_logger(__name__)
 
 
 async def get_or_create_location(session, location_name: str) -> Location:
@@ -106,10 +109,15 @@ async def save_organic_results(
             - Checks for existing keyword,
             if None create keyword:
     """
+    location = data[0]['location']
+
+    logger.info(f'Saving organic results to the database. \
+                location:{location}, service:{service}')
+
     async with async_session() as session:
 
         try:
-            location_name = data[0]['location']
+            location_name = location
             if location_name:
                 location = await get_or_create_location(session, location_name)
 
@@ -135,14 +143,17 @@ async def save_organic_results(
                         )
                         for rank_item in item['rank']
                     ]
-                    session.add_all(rank)  # Add all ranks at once    
+                    session.add_all(rank)  # Add all ranks at once
                 await session.commit()
+                logger.info(
+                    f'Organic results sucessfully saved to the database \
+                        location:{location}, service:{service}')
             else:
-                print(f'locantion_name value null =>  {location_name}')
+                logger.debug(f'location_name value null =>  {location_name}')
         except Exception as e:
-            print(type(e))
-            print(repr(e))
-            raise f'Error on save_organic_results => {e}'
+            logger.debug(f'Unable to save results to the database. \
+                          Function: save_organic_results. Error:{e}')
+            raise Exception(f'Error on save_organic_results => {e}')
 
 
 async def get_keywords_by_location_service(
