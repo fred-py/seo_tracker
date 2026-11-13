@@ -22,6 +22,8 @@ import asyncio
 
 logger = get_logger(__name__)
 
+sem = asyncio.Semaphore(2)
+
 load_dotenv()
 api_key = os.getenv('API_KEY')
 api_key_2 = os.getenv('API_KEY_2')
@@ -143,7 +145,7 @@ async def fetch_and_save(
         for attempt in range(max_retries):
             try:
                 raw = GoogleSearch(params)
-                data = set_location.get_organic_results(raw, keyword)   
+                data = set_location.get_organic_results(raw, keyword)  
                 data_list.append(data)
                 break  # Exit retry loop 
             except TimeoutError:
@@ -156,69 +158,72 @@ async def fetch_and_save(
     await save_organic_results(data_list, service=service)
 
 
+async def limited(coro):
+    async with sem:
+        return await coro
+
+
 async def save_all_concurrently():
     """Fetch and save all data concurrenlty
     in batches by service type.
     Must be done in batches to avoid rate limit."""
-    print('===================================')
-    print("Note: This will consume 179 out of 250 searches on SerpApi")
-    """
-    # Carpet - Batch 1
-    await asyncio.gather(
-        #fetch_and_save(mr, mr_keywords, ServiceEnum.carpet),
-        #fetch_and_save(bus, bus_keywords, ServiceEnum.carpet),
-        #fetch_and_save(duns, duns_keywords, ServiceEnum.carpet),
+
+    result = await asyncio.gather(
+        # Carpet
+        limited(fetch_and_save(mr, mr_keywords, ServiceEnum.carpet)),
+        limited(fetch_and_save(bus, bus_keywords, ServiceEnum.carpet)),
+        limited(fetch_and_save(duns, duns_keywords, ServiceEnum.carpet)),
+
+        # Upholstery
+        limited(fetch_and_save(mr, mr_upholstery_keys, ServiceEnum.upholstery)),
+        limited(fetch_and_save(bus, bus_upholstery_keys, ServiceEnum.upholstery)),
+        limited(fetch_and_save(duns, duns_upholstery_keys, ServiceEnum.upholstery)),
+
+        # Tiles
+        limited(fetch_and_save(mr, mr_tiles, ServiceEnum.tile_grout)),
+        limited(fetch_and_save(bus, bus_tiles, ServiceEnum.tile_grout)),
+        limited(fetch_and_save(duns, duns_tiles, ServiceEnum.tile_grout)),
+
+        # Curtains
+        limited(fetch_and_save(mr, mr_curtains, ServiceEnum.curtains)),
+        limited(fetch_and_save(bus, bus_curtains, ServiceEnum.curtains)),
+        limited(fetch_and_save(duns, duns_curtains, ServiceEnum.curtains)),
+
+        # Leather
+        limited(fetch_and_save(mr, mr_leather, ServiceEnum.leather)),
+        limited(fetch_and_save(bus, bus_leather, ServiceEnum.leather)),
+        limited(fetch_and_save(duns, duns_leather, ServiceEnum.leather)),
+
+        # Water Damage & Restoration
+        limited(fetch_and_save(mr, mr_water, ServiceEnum.water_damage)),
+        limited(fetch_and_save(bus, bus_water, ServiceEnum.water_damage)),
+        limited(fetch_and_save(duns, duns_water, ServiceEnum.water_damage)),
+
+        return_exceptions=True,
     )
 
-    #  Add delay between batches
-    await asyncio.sleep(2)
+    for r in result:
+        if isinstance(r, Exception):
+            logger.error(f'save_all_concurrently method failed: {r}')
 
-    
-    # Upholstery
-    await asyncio.gather(
-        #fetch_and_save(mr, mr_upholstery_keys, ServiceEnum.upholstery),
-        fetch_and_save(bus, bus_upholstery_keys, ServiceEnum.upholstery),
-        #fetch_and_save(duns, duns_upholstery_keys, ServiceEnum.upholstery),
-    )
-    
-    await asyncio.sleep(2)
-    
-    
-    # Tiles
-    await asyncio.gather(
-        #fetch_and_save(mr, mr_tiles, ServiceEnum.tile_grout),
-        #fetch_and_save(bus, bus_tiles, ServiceEnum.tile_grout),
-        fetch_and_save(duns, duns_tiles, ServiceEnum.tile_grout),
-    )
-    
-    await asyncio.sleep(2)
-    
-    # Curtains
-    await asyncio.gather(
-        fetch_and_save(mr, mr_curtains, ServiceEnum.curtains),
-        #fetch_and_save(bus, bus_curtains, ServiceEnum.curtains),
-        #fetch_and_save(duns, duns_curtains, ServiceEnum.curtains),
-    )
-    """
 
-    await asyncio.sleep(2)
+async def fetch_save_outdated_keywords():
+    """Fetch and save all data that failed
+    to be saved when running save_all_concurrently
+    Note: keywords and services must be updated
+    manually as needed"""
 
-    # Leather
-    await asyncio.gather(
-        fetch_and_save(mr, mr_leather, ServiceEnum.leather),
-        fetch_and_save(bus, bus_leather, ServiceEnum.leather),
-        fetch_and_save(duns, duns_leather, ServiceEnum.leather),
+    result = await asyncio.gather(
+
+        limited(fetch_and_save(bus, bus_leather, ServiceEnum.leather)),
+        return_exceptions=True,
     )
-    
-    await asyncio.sleep(2)
-    """
-    # Water Damage & Restoration
-    await asyncio.gather(
-        fetch_and_save(mr, mr_water, ServiceEnum.water_damage),
-        fetch_and_save(bus, bus_water, ServiceEnum.water_damage),
-        fetch_and_save(duns, duns_water, ServiceEnum.water_damage),
-    )
-    """
+
+    for r in result:
+        if isinstance(r, Exception):
+            logger.error(f'save_all_concurrently method failed: {r}')
+
 
 if __name__ == '__main__':
-    asyncio.run(save_all_concurrently())
+    #asyncio.run(save_all_concurrently())
+    asyncio.run(fetch_save_outdated_keywords())
