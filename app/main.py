@@ -14,6 +14,7 @@ app = FastAPI()
 
 origins = [
     "http://localhost:5173",  # React development server
+    "http://localhost:4173",  # React development server 2
     "http://localhost",
 ]
 
