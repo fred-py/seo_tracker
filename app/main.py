@@ -16,6 +16,7 @@ origins = [
     "http://localhost:5173",  # React development server
     "http://localhost:4173",  # React development server 2
     "http://localhost",
+    "https://seo-dashboard-6d998.web.app"  # Firebase
 ]
 
 app.add_middleware(
